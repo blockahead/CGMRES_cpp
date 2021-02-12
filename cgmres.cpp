@@ -84,64 +84,56 @@ void Cgmres::mov(double* ret, const double* vec, const int16_t row) {
   }
 }
 
-void Cgmres::mov(double* ret, const double* mat, const int16_t row,
-                 const int16_t col) {
+void Cgmres::mov(double* ret, const double* mat, const int16_t row, const int16_t col) {
   int16_t i;
   for (i = 0; i < row * col; i++) {
     ret[i] = mat[i];
   }
 }
 
-void Cgmres::add(double* ret, const double* vec1, const double* vec2,
-                 const int16_t row) {
+void Cgmres::add(double* ret, const double* vec1, const double* vec2, const int16_t row) {
   int16_t i;
   for (i = 0; i < row; i++) {
     ret[i] = vec1[i] + vec2[i];
   }
 }
 
-void Cgmres::add(double* ret, const double* mat1, const double* mat2,
-                 const int16_t row, const int16_t col) {
+void Cgmres::add(double* ret, const double* mat1, const double* mat2, const int16_t row, const int16_t col) {
   int16_t i;
   for (i = 0; i < row * col; i++) {
     ret[i] = mat1[i] + mat2[i];
   }
 }
 
-void Cgmres::sub(double* ret, const double* vec1, const double* vec2,
-                 const int16_t row) {
+void Cgmres::sub(double* ret, const double* vec1, const double* vec2, const int16_t row) {
   int16_t i;
   for (i = 0; i < row; i++) {
     ret[i] = vec1[i] - vec2[i];
   }
 }
 
-void Cgmres::sub(double* ret, const double* mat1, const double* mat2,
-                 const int16_t row, const int16_t col) {
+void Cgmres::sub(double* ret, const double* mat1, const double* mat2, const int16_t row, const int16_t col) {
   int16_t i;
   for (i = 0; i < row * col; i++) {
     ret[i] = mat1[i] - mat2[i];
   }
 }
 
-void Cgmres::mul(double* ret, const double* vec, const double c,
-                 const int16_t row) {
+void Cgmres::mul(double* ret, const double* vec, const double c, const int16_t row) {
   int16_t i;
   for (i = 0; i < row; i++) {
     ret[i] = vec[i] * c;
   }
 }
 
-void Cgmres::mul(double* ret, const double* mat, const double c,
-                 const int16_t row, const int16_t col) {
+void Cgmres::mul(double* ret, const double* mat, const double c, const int16_t row, const int16_t col) {
   int16_t i;
   for (i = 0; i < row * col; i++) {
     ret[i] = mat[i] * c;
   }
 }
 
-void Cgmres::mul(double* ret, const double* mat, const double* vec,
-                 const int16_t row, const int16_t col) {
+void Cgmres::mul(double* ret, const double* mat, const double* vec, const int16_t row, const int16_t col) {
   int16_t i, j, idx;
 #ifdef DEBUG_MODE
   if (ret == vec) {
@@ -161,8 +153,8 @@ void Cgmres::mul(double* ret, const double* mat, const double* vec,
   }
 }
 
-void Cgmres::mul(double* ret, const double* mat1, const double* mat2,
-                 const int16_t l, const int16_t row, const int16_t col) {
+void Cgmres::mul(double* ret, const double* mat1, const double* mat2, const int16_t l, const int16_t row,
+                 const int16_t col) {
   int16_t i, j, k, idx1, idx2, idx3;
 #ifdef DEBUG_MODE
   if (ret == mat1 || ret == mat2) {
@@ -188,8 +180,7 @@ void Cgmres::mul(double* ret, const double* mat1, const double* mat2,
   }
 }
 
-void Cgmres::div(double* ret, const double* vec, const double c,
-                 const int16_t row) {
+void Cgmres::div(double* ret, const double* vec, const double c, const int16_t row) {
   int16_t i;
   double inv_c = 1.0 / c;
   for (i = 0; i < row; i++) {
@@ -197,8 +188,7 @@ void Cgmres::div(double* ret, const double* vec, const double c,
   }
 }
 
-void Cgmres::div(double* ret, const double* mat, const double c,
-                 const int16_t row, const int16_t col) {
+void Cgmres::div(double* ret, const double* mat, const double c, const int16_t row, const int16_t col) {
   int16_t i;
   double inv_c = 1.0 / c;
   for (i = 0; i < row * col; i++) {
@@ -246,15 +236,13 @@ void Cgmres::adjoint_eqation(void) {
   for (i = dv - 1; i >= 0; i--) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
-    Model::dHdx(x_vec_buf, &x_vec[idx_x], &U_vec[idx_u],
-                &lmd_vec[idx_x + dim_x]);
+    Model::dHdx(x_vec_buf, &x_vec[idx_x], &U_vec[idx_u], &lmd_vec[idx_x + dim_x]);
     mul(x_vec_buf, x_vec_buf, dtau, dim_x);
     add(&lmd_vec[idx_x], &lmd_vec[idx_x + dim_x], x_vec_buf, dim_x);
   }
 }
 
-void Cgmres::F_func(double* ret, const double* U_vec_tmp,
-                    const double* x_vec_tmp) {
+void Cgmres::F_func(double* ret, const double* U_vec_tmp, const double* x_vec_tmp) {
   int16_t i, idx_x, idx_u;
 
 #ifdef DEBUG_MODE
@@ -270,8 +258,7 @@ void Cgmres::F_func(double* ret, const double* U_vec_tmp,
   for (i = 0; i < dv; i++) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
-    Model::dHdu(&ret[idx_u], &x_vec_tmp[idx_x], &U_vec_tmp[idx_u],
-                &lmd_vec[idx_x]);
+    Model::dHdu(&ret[idx_u], &x_vec_tmp[idx_x], &U_vec_tmp[idx_u], &lmd_vec[idx_x]);
   }
 }
 
@@ -344,9 +331,7 @@ void Cgmres::gmres() {
     for (i = 0; i < k; i++) {
       idx_h = (k_max + 1) * k + i;
       idx_g = g_vec_len * i;
-      buf = (g_vec[idx_g + 0] * h_mat[idx_h + 0] +
-             g_vec[idx_g + 1] * h_mat[idx_h + 1]) *
-            g_vec[idx_g + 2];
+      buf = (g_vec[idx_g + 0] * h_mat[idx_h + 0] + g_vec[idx_g + 1] * h_mat[idx_h + 1]) * g_vec[idx_g + 2];
       h_mat[idx_h + 0] = h_mat[idx_h + 0] - buf * g_vec[idx_g + 0];
       h_mat[idx_h + 1] = h_mat[idx_h + 1] - buf * g_vec[idx_g + 1];
     }
