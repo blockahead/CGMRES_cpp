@@ -23,8 +23,8 @@ Cgmres::Cgmres(double* u0) {
 
   //---------------------------------------
   for (int16_t i = 0; i < dv; i++) {
-    int16_t index = dim_u * i;
-    mov(&U_vec[index], u0, dim_u);
+    int16_t idx = dim_u * i;
+    mov(&U_vec[idx], u0, dim_u);
   }
   //---------------------------------------
 }
@@ -48,28 +48,28 @@ Cgmres::~Cgmres(void) {
   free(U_vec_buf);
 }
 
-double* Cgmres::vector(int16_t n) {
+double* Cgmres::vector(int16_t row) {
   int16_t i;
   double* ret;
-  ret = (double*)malloc(sizeof(double) * n);
+  ret = (double*)malloc(sizeof(double) * row);
   if (NULL == ret) {
     printf("Vector malloc() failure.");
   } else {
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < row; i++) {
       *(ret + i) = 0.0;
     }
   }
   return ret;
 }
 
-double* Cgmres::matrix(int16_t m, int16_t n) {
+double* Cgmres::matrix(int16_t row, int16_t col) {
   int16_t i;
   double* ret;
-  ret = (double*)malloc(sizeof(double) * m * n);
+  ret = (double*)malloc(sizeof(double) * row * col);
   if (NULL == ret) {
     printf("Matrix malloc() failure.");
   } else {
-    for (i = 0; i < m * n; i++) {
+    for (i = 0; i < row * col; i++) {
       *(ret + i) = 0.0;
     }
   }
@@ -77,105 +77,93 @@ double* Cgmres::matrix(int16_t m, int16_t n) {
   return ret;
 }
 
-void Cgmres::mov(double* ret, const double* vec, const int16_t n) {
+void Cgmres::mov(double* ret, const double* vec, const int16_t row) {
   int16_t i;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = vec[i];
   }
 }
 
-void Cgmres::mov(double* ret, const double* mat, const int16_t m,
-                 const int16_t n) {
-  int16_t i, j, index;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index = n * i + j;
-      ret[index] = mat[index];
-    }
+void Cgmres::mov(double* ret, const double* mat, const int16_t row,
+                 const int16_t col) {
+  int16_t i;
+  for (i = 0; i < row * col; i++) {
+    ret[i] = mat[i];
   }
 }
 
 void Cgmres::add(double* ret, const double* vec1, const double* vec2,
-                 const int16_t n) {
+                 const int16_t row) {
   int16_t i;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = vec1[i] + vec2[i];
   }
 }
 
 void Cgmres::add(double* ret, const double* mat1, const double* mat2,
-                 const int16_t m, const int16_t n) {
-  int16_t i, j, index;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index = n * i + j;
-      ret[index] = mat1[index] + mat2[index];
-    }
+                 const int16_t row, const int16_t col) {
+  int16_t i;
+  for (i = 0; i < row * col; i++) {
+    ret[i] = mat1[i] + mat2[i];
   }
 }
 
 void Cgmres::sub(double* ret, const double* vec1, const double* vec2,
-                 const int16_t n) {
+                 const int16_t row) {
   int16_t i;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = vec1[i] - vec2[i];
   }
 }
 
 void Cgmres::sub(double* ret, const double* mat1, const double* mat2,
-                 const int16_t m, const int16_t n) {
-  int16_t i, j, index;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index = n * i + j;
-      ret[index] = mat1[index] - mat2[index];
-    }
+                 const int16_t row, const int16_t col) {
+  int16_t i;
+  for (i = 0; i < row * col; i++) {
+    ret[i] = mat1[i] - mat2[i];
   }
 }
 
 void Cgmres::mul(double* ret, const double* vec, const double c,
-                 const int16_t n) {
+                 const int16_t row) {
   int16_t i;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = vec[i] * c;
   }
 }
 
 void Cgmres::mul(double* ret, const double* mat, const double c,
-                 const int16_t m, const int16_t n) {
-  int16_t i, j, index;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index = n * i + j;
-      ret[index] = mat[index] * c;
-    }
+                 const int16_t row, const int16_t col) {
+  int16_t i;
+  for (i = 0; i < row * col; i++) {
+    ret[i] = mat[i] * c;
   }
 }
 
 void Cgmres::mul(double* ret, const double* mat, const double* vec,
-                 const int16_t m, const int16_t n) {
-  int16_t i, j, index;
+                 const int16_t row, const int16_t col) {
+  int16_t i, j, idx;
 #ifdef DEBUG_MODE
   if (ret == vec) {
     printf("%s pointer error !\n", __func__);
     exit(-1);
   }
 #endif
-  for (i = 0; i < m; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = 0.0;
   }
 
-  for (j = 0; j < n; j++) {
-    for (i = 0; i < m; i++) {
-      index = m * j + i;
-      ret[i] += mat[index] * vec[j];
+  for (j = 0; j < col; j++) {
+    for (i = 0; i < row; i++) {
+      idx = row * j + i;
+      ret[i] += mat[idx] * vec[j];
     }
   }
 }
 
 void Cgmres::mul(double* ret, const double* mat1, const double* mat2,
-                 const int16_t l, const int16_t m, const int16_t n) {
-  int16_t i, j, k, index1, index2, index3;
+                 const int16_t l, const int16_t row, const int16_t col) {
+  int16_t i, j, k, idx1, idx2, idx3;
 #ifdef DEBUG_MODE
   if (ret == mat1 || ret == mat2) {
     printf("%s pointer error !\n", __func__);
@@ -183,41 +171,38 @@ void Cgmres::mul(double* ret, const double* mat1, const double* mat2,
   }
 #endif
 
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index1 = n * i + j;
-      ret[index1] = 0;
+  for (i = 0; i < row; i++) {
+    for (j = 0; j < col; j++) {
+      idx1 = col * i + j;
+      ret[idx1] = 0;
     }
 
     for (k = 0; k < l; k++) {
-      index2 = n * i + k;
-      for (j = 0; j < n; j++) {
-        index1 = n * i + j;
-        index3 = n * k + j;
-        ret[index1] += mat1[index2] * mat2[index3];
+      idx2 = col * i + k;
+      for (j = 0; j < col; j++) {
+        idx1 = col * i + j;
+        idx3 = col * k + j;
+        ret[idx1] += mat1[idx2] * mat2[idx3];
       }
     }
   }
 }
 
 void Cgmres::div(double* ret, const double* vec, const double c,
-                 const int16_t n) {
+                 const int16_t row) {
   int16_t i;
   double inv_c = 1.0 / c;
-  for (i = 0; i < n; i++) {
+  for (i = 0; i < row; i++) {
     ret[i] = vec[i] * inv_c;
   }
 }
 
 void Cgmres::div(double* ret, const double* mat, const double c,
-                 const int16_t m, const int16_t n) {
-  int16_t i, j, index;
+                 const int16_t row, const int16_t col) {
+  int16_t i;
   double inv_c = 1.0 / c;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      index = n * i + j;
-      ret[index] = mat[index] * inv_c;
-    }
+  for (i = 0; i < row * col; i++) {
+    ret[i] = mat[i] * inv_c;
   }
 }
 
@@ -241,36 +226,36 @@ double Cgmres::dot(const double* vec1, const double* vec2, const int16_t n) {
   return ret;
 }
 
-double Cgmres::sign(const double x) { return (x < 0) ? -1 : 1; }
+double Cgmres::sign(const double x) { return (x < 0.0) ? -1.0 : 1.0; }
 
 void Cgmres::state_equation(const double* x0) {
-  int16_t i, index_x, index_u;
+  int16_t i, idx_x, idx_u;
   mov(x_vec, x0, dim_x);
   for (i = 0; i < dv; i++) {
-    index_x = dim_x * i;
-    index_u = dim_u * i;
-    Model::dxdt(&dxdt_vec[index_x], &x_vec[index_x], &U_vec[index_u]);
-    mul(x_vec_buf, &dxdt_vec[index_x], dtau, dim_x);
-    add(&x_vec[index_x + dim_x], &x_vec[index_x], x_vec_buf, dim_x);
+    idx_x = dim_x * i;
+    idx_u = dim_u * i;
+    Model::dxdt(&dxdt_vec[idx_x], &x_vec[idx_x], &U_vec[idx_u]);
+    mul(x_vec_buf, &dxdt_vec[idx_x], dtau, dim_x);
+    add(&x_vec[idx_x + dim_x], &x_vec[idx_x], x_vec_buf, dim_x);
   }
 }
 
 void Cgmres::adjoint_eqation(void) {
-  int16_t i, index_x, index_u;
+  int16_t i, idx_x, idx_u;
   Model::dPhidx(&lmd_vec[dim_x * dv], &x_vec[dim_x * dv]);
   for (i = dv - 1; i >= 0; i--) {
-    index_x = dim_x * i;
-    index_u = dim_u * i;
-    Model::dHdx(x_vec_buf, &x_vec[index_x], &U_vec[index_u],
-                &lmd_vec[index_x + dim_x]);
+    idx_x = dim_x * i;
+    idx_u = dim_u * i;
+    Model::dHdx(x_vec_buf, &x_vec[idx_x], &U_vec[idx_u],
+                &lmd_vec[idx_x + dim_x]);
     mul(x_vec_buf, x_vec_buf, dtau, dim_x);
-    add(&lmd_vec[index_x], &lmd_vec[index_x + dim_x], x_vec_buf, dim_x);
+    add(&lmd_vec[idx_x], &lmd_vec[idx_x + dim_x], x_vec_buf, dim_x);
   }
 }
 
 void Cgmres::F_func(double* ret, const double* U_vec_tmp,
                     const double* x_vec_tmp) {
-  int16_t i, index_x, index_u;
+  int16_t i, idx_x, idx_u;
 
 #ifdef DEBUG_MODE
   if (ret == U_vec_tmp) {
@@ -283,15 +268,15 @@ void Cgmres::F_func(double* ret, const double* U_vec_tmp,
 #endif
 
   for (i = 0; i < dv; i++) {
-    index_x = dim_x * i;
-    index_u = dim_u * i;
-    Model::dHdu(&ret[index_u], &x_vec_tmp[index_x], &U_vec_tmp[index_u],
-                &lmd_vec[index_x]);
+    idx_x = dim_x * i;
+    idx_u = dim_u * i;
+    Model::dHdu(&ret[idx_u], &x_vec_tmp[idx_x], &U_vec_tmp[idx_u],
+                &lmd_vec[idx_x]);
   }
 }
 
 void Cgmres::gmres() {
-  int16_t len, i, j, k, index_v1, index_v2, index_h, index_g;
+  int16_t len, i, j, k, idx_v1, idx_v2, idx_h, idx_g;
   double buf;
 
   // x + dxdt * h
@@ -325,59 +310,59 @@ void Cgmres::gmres() {
 
   for (k = 0; k < k_max; k++) {
     // F_dUh_dxh_h = F(U + v[k] * h, x + dxdt * h)
-    index_v1 = len * k;
-    mul(U_vec_buf, &v_mat[index_v1], h, len);
+    idx_v1 = len * k;
+    mul(U_vec_buf, &v_mat[idx_v1], h, len);
     add(U_vec_buf, U_vec, U_vec_buf, len);
     F_func(F_dUh_dxh_h, U_vec_buf, x_vec_buf);
 
     // v[k+1] = (F(U + v[k] * h, x + dxdt * h) - F(U, x + dxdt * h)) / h
-    index_v1 = len * (k + 1);
+    idx_v1 = len * (k + 1);
     sub(U_vec_buf, F_dUh_dxh_h, F_dxh_h, len);
-    div(&v_mat[index_v1], U_vec_buf, h, len);
+    div(&v_mat[idx_v1], U_vec_buf, h, len);
 
     // Modified Gram-Schmidt
     for (i = 0; i < k + 1; i++) {
-      index_v2 = len * i;
-      index_h = (k_max + 1) * k + i;
-      h_mat[index_h] = dot(&v_mat[index_v2], &v_mat[index_v1], len);
-      mul(U_vec_buf, &v_mat[index_v2], h_mat[index_h], len);
-      sub(&v_mat[index_v1], &v_mat[index_v1], U_vec_buf, len);
+      idx_v2 = len * i;
+      idx_h = (k_max + 1) * k + i;
+      h_mat[idx_h] = dot(&v_mat[idx_v2], &v_mat[idx_v1], len);
+      mul(U_vec_buf, &v_mat[idx_v2], h_mat[idx_h], len);
+      sub(&v_mat[idx_v1], &v_mat[idx_v1], U_vec_buf, len);
     }
-    index_h = (k_max + 1) * k + (k + 1);
-    h_mat[index_h] = norm(&v_mat[index_v1], len);
+    idx_h = (k_max + 1) * k + (k + 1);
+    h_mat[idx_h] = norm(&v_mat[idx_v1], len);
 
     // Check breakdown
-    if (fabs(h_mat[index_h]) < DBL_EPSILON) {
+    if (fabs(h_mat[idx_h]) < DBL_EPSILON) {
       printf("Breakdown\n");
       return;
     } else {
-      div(&v_mat[index_v1], &v_mat[index_v1], h_mat[index_h], len);
+      div(&v_mat[idx_v1], &v_mat[idx_v1], h_mat[idx_h], len);
     }
 
     // Transformation h_mat to upper triangular matrix with Householder
     // transformation
     for (i = 0; i < k; i++) {
-      index_h = (k_max + 1) * k + i;
-      index_g = g_vec_len * i;
-      buf = (g_vec[index_g + 0] * h_mat[index_h + 0] +
-             g_vec[index_g + 1] * h_mat[index_h + 1]) *
-            g_vec[index_g + 2];
-      h_mat[index_h + 0] = h_mat[index_h + 0] - buf * g_vec[index_g + 0];
-      h_mat[index_h + 1] = h_mat[index_h + 1] - buf * g_vec[index_g + 1];
+      idx_h = (k_max + 1) * k + i;
+      idx_g = g_vec_len * i;
+      buf = (g_vec[idx_g + 0] * h_mat[idx_h + 0] +
+             g_vec[idx_g + 1] * h_mat[idx_h + 1]) *
+            g_vec[idx_g + 2];
+      h_mat[idx_h + 0] = h_mat[idx_h + 0] - buf * g_vec[idx_g + 0];
+      h_mat[idx_h + 1] = h_mat[idx_h + 1] - buf * g_vec[idx_g + 1];
     }
-    index_h = (k_max + 1) * k + k;
-    index_g = g_vec_len * k;
-    buf = -sign(h_mat[index_h]) * norm(&h_mat[index_h], 2);  // Vector length
-    g_vec[index_g + 0] = h_mat[index_h + 0] - buf;
-    g_vec[index_g + 1] = h_mat[index_h + 1];
-    g_vec[index_g + 2] = 2.0 / dot(&g_vec[index_g], &g_vec[index_g], 2);
-    h_mat[index_h + 0] = buf;
-    h_mat[index_h + 1] = 0.0;
+    idx_h = (k_max + 1) * k + k;
+    idx_g = g_vec_len * k;
+    buf = -sign(h_mat[idx_h]) * norm(&h_mat[idx_h], 2);  // Vector length
+    g_vec[idx_g + 0] = h_mat[idx_h + 0] - buf;
+    g_vec[idx_g + 1] = h_mat[idx_h + 1];
+    g_vec[idx_g + 2] = 2.0 / dot(&g_vec[idx_g], &g_vec[idx_g], 2);
+    h_mat[idx_h + 0] = buf;
+    h_mat[idx_h + 1] = 0.0;
 
     // Update residual
-    buf = g_vec[index_g + 0] * rho_e_vec[k + 0] * g_vec[index_g + 2];
-    rho_e_vec[k + 0] = rho_e_vec[k + 0] - buf * g_vec[index_g + 0];
-    rho_e_vec[k + 1] = -buf * g_vec[index_g + 1];
+    buf = g_vec[idx_g + 0] * rho_e_vec[k + 0] * g_vec[idx_g + 2];
+    rho_e_vec[k + 0] = rho_e_vec[k + 0] - buf * g_vec[idx_g + 0];
+    rho_e_vec[k + 1] = -buf * g_vec[idx_g + 1];
 
     // Check convergence
     if (fabs(rho_e_vec[k + 1]) < tol) {
@@ -389,11 +374,11 @@ void Cgmres::gmres() {
   // h_mat is upper triangle matrix
   for (i = k - 1; i >= 0; i--) {
     for (j = k - 1; j > i; j--) {
-      index_h = (k_max + 1) * j + i;
-      rho_e_vec[i] -= h_mat[index_h] * rho_e_vec[j];
+      idx_h = (k_max + 1) * j + i;
+      rho_e_vec[i] -= h_mat[idx_h] * rho_e_vec[j];
     }
-    index_h = (k_max + 1) * i + i;
-    rho_e_vec[i] /= h_mat[index_h];
+    idx_h = (k_max + 1) * i + i;
+    rho_e_vec[i] /= h_mat[idx_h];
   }
 
   // dUdt = dUdt + v_mat * y
