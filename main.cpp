@@ -23,18 +23,25 @@ int main(void) {
   double* u;
   double* dxdt;
 
-  x = Simulator::vector(2);
+  x = Simulator::vector(4);
   x[0] = 2.0;
-  x[1] = 0.0;
+  x[1] = 2.0;
+  x[2] = 0.0;
+  x[3] = 0.0;
 
-  u = Simulator::vector(3);
-  u[0] = 0.028393761456739753656908220592;
-  u[1] = 0.166095020295846107494242005487;
-  u[2] = 0.030103250483332195247543339178;
+  u = Simulator::vector(6);
+  u[0] = 0.0;
+  u[1] = 0.0;
+  u[2] = 10.0;
+  u[3] = 10.0;
+  u[4] = 0.005;
+  u[5] = 0.005;
 
-  dxdt = Simulator::vector(2);
+  dxdt = Simulator::vector(4);
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
+  dxdt[2] = 0.0;
+  dxdt[3] = 0.0;
 
   Cgmres controller = Cgmres(u);
 

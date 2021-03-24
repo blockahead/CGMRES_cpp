@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/hamada/Documents/cpp/CGMRES_cpp/build",
+  "command": "/usr/bin/g++-9    -O3 -Wall -g   -o CMakeFiles/CGMRES.dir/main.cpp.o -c /home/hamada/Documents/cpp/CGMRES_cpp/main.cpp",
+  "file": "/home/hamada/Documents/cpp/CGMRES_cpp/main.cpp"
+},
+{
+  "directory": "/home/hamada/Documents/cpp/CGMRES_cpp/build",
+  "command": "/usr/bin/g++-9    -O3 -Wall -g   -o CMakeFiles/CGMRES.dir/cgmres.cpp.o -c /home/hamada/Documents/cpp/CGMRES_cpp/cgmres.cpp",
+  "file": "/home/hamada/Documents/cpp/CGMRES_cpp/cgmres.cpp"
+}
+]
