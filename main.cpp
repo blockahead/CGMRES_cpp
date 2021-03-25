@@ -23,25 +23,18 @@ int main(void) {
   double* u;
   double* dxdt;
 
-  x = Simulator::vector(4);
+  x = Simulator::vector(2);
   x[0] = 2.0;
-  x[1] = 2.0;
-  x[2] = 0.0;
-  x[3] = 0.0;
+  x[1] = 0.0;
 
-  u = Simulator::vector(6);
+  u = Simulator::vector(3);
   u[0] = 0.0;
-  u[1] = 0.0;
-  u[2] = 10.0;
-  u[3] = 10.0;
-  u[4] = 0.005;
-  u[5] = 0.005;
+  u[1] = 1.0;
+  u[2] = 0.03;
 
-  dxdt = Simulator::vector(4);
+  dxdt = Simulator::vector(2);
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
-  dxdt[2] = 0.0;
-  dxdt[3] = 0.0;
 
   Cgmres controller = Cgmres(u);
 
@@ -53,7 +46,7 @@ int main(void) {
       // Test code
       t_start = getEtime();
       controller.control(x);
-      Simulator::mov(u, controller.U_vec, 3);
+      Simulator::mov(u, controller.U, 3);
       t_end = getEtime();
       t_all += (t_end - t_start);
 

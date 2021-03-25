@@ -12,32 +12,33 @@ class Cgmres : public Model {
   void init();
 
  public:
-  double* U_vec;
+  double* U;
   Cgmres(double* u0);
   ~Cgmres(void);
-  void control(double* x);
+  void control(const double* x);
 
  private:
   // Constants
   static constexpr uint16_t g_vec_len = 3;
 
   // Variables
-  double dtau;
-  double* dUdt_vec;
-  double* x_vec;
-  double* dxdt_vec;
-  double* lmd_vec;
+  double t;
+  double* dUdt;
+
+  double* x_dxh;
+  double* xtau;
+  double* ltau;
+
   double* F_dxh_h;
   double* F_dUh_dxh_h;
-
   double* b_vec;
+
   double* v_mat;
   double* h_mat;
   double* rho_e_vec;
   double* g_vec;
 
-  double* x_vec_buf;
-  double* U_vec_buf;
+  double* U_buf;
 
   // vector, matrix allocation
   static double* vector(int16_t row);
@@ -59,8 +60,7 @@ class Cgmres : public Model {
   static void mul(double* ret, const double* vec, const double c, const int16_t row);
   static void mul(double* ret, const double* mat, const double c, const int16_t row, const int16_t col);
   static void mul(double* ret, const double* mat, const double* vec, const int16_t row, const int16_t col);
-  static void mul(double* ret, const double* mat1, const double* mat2, const int16_t l, const int16_t m,
-                  const int16_t n);
+  static void mul(double* ret, const double* mat1, const double* mat2, const int16_t l, const int16_t m, const int16_t n);
 
   // ret = vec / c, ret = mat / c
   static void div(double* ret, const double* vec, const double c, const int16_t row);
@@ -75,8 +75,6 @@ class Cgmres : public Model {
   // ret = sign(x)
   static double sign(const double x);
 
-  void state_equation(const double* x0);
-  void adjoint_eqation(void);
-  void F_func(double* ret, const double* U_vec, const double* x_vec);
+  void F_func(double* ret, const double* U_vec, const double* x, const double t);
   void gmres();
 };
