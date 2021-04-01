@@ -403,5 +403,6 @@ void Cgmres::control(const double* x) {
   add(U, U, U_buf, len);
 
   // t = t + dt
+  // This value may not overflow due to loss of trailing digits
   t = t + dt;
 }
