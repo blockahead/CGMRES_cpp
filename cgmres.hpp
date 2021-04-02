@@ -9,13 +9,10 @@
 
 class Cgmres : public Model {
  public:
-  void init();
-
- public:
-  double* U;
   Cgmres(double* u0);
   ~Cgmres(void);
-  void control(const double* x);
+  void init();
+  void control(double* u, const double* x);
 
  private:
   // Constants
@@ -23,6 +20,7 @@ class Cgmres : public Model {
 
   // Variables
   double t;
+  double* U;
   double* dUdt;
 
   double* x_dxh;

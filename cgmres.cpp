@@ -6,7 +6,7 @@ Cgmres::Cgmres(double* u0) {
   t = 0.0;
   U = vector(dim_u * dv);
   dUdt = vector(dim_u * dv);
-  
+
   x_dxh = vector(dim_x);
   xtau = vector(dim_x * (dv + 1));
   ltau = vector(dim_x * (dv + 1));
@@ -373,7 +373,7 @@ void Cgmres::gmres() {
   add(dUdt, dUdt, U_buf, len);
 }
 
-void Cgmres::control(const double* x) {
+void Cgmres::control(double* u, const double* x) {
   int16_t len;
 
   // x_dxh = x + dxdt * h
@@ -405,4 +405,6 @@ void Cgmres::control(const double* x) {
   // t = t + dt
   // This value may not overflow due to loss of trailing digits
   t = t + dt;
+
+  mov(u, U, dim_u);
 }

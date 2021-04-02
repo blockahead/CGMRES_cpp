@@ -6,6 +6,8 @@
 #include "cgmres.hpp"
 #include "semiactive_damper/simulator.hpp"
 
+#define semiactive_damper
+
 double getEtime(void) {
   struct timeval tv;
   gettimeofday(&tv, NULL);
@@ -23,18 +25,42 @@ int main(void) {
   double* u;
   double* dxdt;
 
-  x = Simulator::vector(2);
+  x = Simulator::vector(Simulator::dim_x);
+  u = Simulator::vector(Simulator::dim_u);
+  dxdt = Simulator::vector(Simulator::dim_x);
+
+  // semiactive_damper
+#ifdef semiactive_damper
   x[0] = 2.0;
   x[1] = 0.0;
 
-  u = Simulator::vector(3);
   u[0] = 0.028393761456740;
   u[1] = 0.166095020295846;
   u[2] = 0.030103250483332;
 
-  dxdt = Simulator::vector(2);
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
+#endif
+
+  // mass_spring_damper
+#ifdef mass_spring_damper
+  x[0] = 2.0;
+  x[1] = 2.0;
+  x[2] = 0.0;
+  x[3] = 0.0;
+
+  u[0] = 0.0;
+  u[1] = 0.0;
+  u[2] = 10.0;
+  u[3] = 10.0;
+  u[4] = 5e-4;
+  u[5] = 5e-4;
+
+  dxdt[0] = 0.0;
+  dxdt[1] = 0.0;
+  dxdt[2] = 0.0;
+  dxdt[3] = 0.0;
+#endif
 
   Cgmres controller = Cgmres(u);
 
@@ -42,22 +68,29 @@ int main(void) {
   fp_u = fopen("u.txt", "w");
 
   if (NULL != fp_x && NULL != fp_u) {
-    for (int i = 0; i <= 20000; i++) {
+    for (int i = 0; i <= (int)(Simulator::t_end / Simulator::dt); i++) {
       // Test code
       t_start = getEtime();
-      controller.control(x);
-      Simulator::mov(u, controller.U, 3);
+      controller.control(u, x);
       t_end = getEtime();
       t_all += (t_end - t_start);
 
       // x = x + dxdt * dt
-      double dt = 0.001;
+      double dt = Simulator::dt;
       Simulator::dxdt(dxdt, x, u);
-      Simulator::mul(dxdt, dxdt, dt, 2);
-      Simulator::add(x, x, dxdt, 2);
+      Simulator::mul(dxdt, dxdt, dt, Simulator::dim_x);
+      Simulator::add(x, x, dxdt, Simulator::dim_x);
 
-      fprintf(fp_x, "%f\t%f\t%f\n", dt * i, x[0], x[1]);
-      fprintf(fp_u, "%f\t%f\t%f\t%f\n", dt * i, u[0], u[1], u[2]);
+      fprintf(fp_x, "%f", dt * i);
+      fprintf(fp_u, "%f", dt * i);
+      for (int j = 0; j < Simulator::dim_x; j++) {
+        fprintf(fp_x, "\t%f", x[j]);
+      }
+      for (int j = 0; j < Simulator::dim_u; j++) {
+        fprintf(fp_u, "\t%f", u[j]);
+      }
+      fprintf(fp_x, "\n");
+      fprintf(fp_u, "\n");
     }
 
     fclose(fp_x);

@@ -5,6 +5,11 @@
 
 class Simulator {
  public:
+  static constexpr double t_end = 20;
+  static constexpr double dt = 0.001;
+  static constexpr uint16_t dim_x = 4;
+  static constexpr uint16_t dim_u = 6;
+
   static double* vector(int16_t row) {
     int16_t i;
     double* ret;

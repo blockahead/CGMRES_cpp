@@ -110,7 +110,7 @@ class Model {
   static constexpr double xf0 = 0.0, xf1 = 0.0;
   static constexpr double sf0 = 1.0, sf1 = 1.0, sf2 = 10.0, sf3 = 10.0;
   static constexpr double q0 = 1.0, q1 = 1.0, q2 = 10.0, q3 = 10.0;
-  static constexpr double r0 = 10.0, r1 = 10.0, r2 = 0.01, r3 = 0.01;
+  static constexpr double r0 = 0.1, r1 = 0.1, r2 = 0.01, r3 = 0.01;
 
   // For constraints
   static constexpr double umin = -10.0;
