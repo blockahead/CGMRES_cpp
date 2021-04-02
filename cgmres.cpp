@@ -303,7 +303,7 @@ void Cgmres::gmres() {
     add(U_buf, U, U_buf, len);
     F_func(F_dUh_dxh_h, U_buf, x_dxh, t + h);
 
-    // v[k+1] = (F(U + v[k] * h, x + dxdt * h) - F(U, x + dxdt * h)) / h
+    // v[k + 1] = (F(U + v[k] * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
     idx_v1 = len * (k + 1);
     sub(U_buf, F_dUh_dxh_h, F_dxh_h, len);
     div(&v_mat[idx_v1], U_buf, h, len);
