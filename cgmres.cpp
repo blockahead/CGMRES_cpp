@@ -327,8 +327,7 @@ void Cgmres::gmres() {
       div(&v_mat[idx_v1], &v_mat[idx_v1], h_mat[idx_h], len);
     }
 
-    // Transformation h_mat to upper triangular matrix with Householder
-    // transformation
+    // Transformation h_mat to upper triangular matrix by Householder transformation
     for (i = 0; i < k; i++) {
       idx_h = (k_max + 1) * k + i;
       idx_g = g_vec_len * i;
