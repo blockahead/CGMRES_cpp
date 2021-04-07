@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-#define DEBUG_MODE
-
 #include "cgmres.hpp"
 #include "matrix.hpp"
 #include "semiactive_damper/simulator.hpp"

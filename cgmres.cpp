@@ -1,5 +1,7 @@
 #include "cgmres.hpp"
 
+#define DEBUG_MODE
+
 Cgmres::Cgmres(double* u0) {
   t = 0.0;
   U = vector(dim_u * dv);
