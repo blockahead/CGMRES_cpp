@@ -3,7 +3,10 @@
 
 #include <iostream>
 
+#define DEBUG_MODE
+
 #include "cgmres.hpp"
+#include "matrix.hpp"
 #include "semiactive_damper/simulator.hpp"
 
 #define semiactive_damper
@@ -25,9 +28,9 @@ int main(void) {
   double* u;
   double* dxdt;
 
-  x = Simulator::vector(Simulator::dim_x);
-  u = Simulator::vector(Simulator::dim_u);
-  dxdt = Simulator::vector(Simulator::dim_x);
+  x = vector(Simulator::dim_x);
+  u = vector(Simulator::dim_u);
+  dxdt = vector(Simulator::dim_x);
 
   // semiactive_damper
 #ifdef semiactive_damper
@@ -78,8 +81,8 @@ int main(void) {
       // x = x + dxdt * dt
       double dt = Simulator::dt;
       Simulator::dxdt(dxdt, x, u);
-      Simulator::mul(dxdt, dxdt, dt, Simulator::dim_x);
-      Simulator::add(x, x, dxdt, Simulator::dim_x);
+      mul(dxdt, dxdt, dt, Simulator::dim_x);
+      add(x, x, dxdt, Simulator::dim_x);
 
       fprintf(fp_x, "%f", dt * i);
       fprintf(fp_u, "%f", dt * i);

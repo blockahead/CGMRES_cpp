@@ -1,7 +1,5 @@
 #include "cgmres.hpp"
 
-#define DEBUG_MODE
-
 Cgmres::Cgmres(double* u0) {
   t = 0.0;
   U = vector(dim_u * dv);
@@ -22,12 +20,10 @@ Cgmres::Cgmres(double* u0) {
 
   U_buf = vector(dim_u * dv);
 
-  //---------------------------------------
   for (int16_t i = 0; i < dv; i++) {
     int16_t idx = dim_u * i;
     mov(&U[idx], u0, dim_u);
   }
-  //---------------------------------------
 }
 
 Cgmres::~Cgmres(void) {
@@ -50,174 +46,14 @@ Cgmres::~Cgmres(void) {
   free(U_buf);
 }
 
-double* Cgmres::vector(int16_t row) {
-  int16_t i;
-  double* ret;
-  ret = (double*)malloc(sizeof(double) * row);
-  if (NULL == ret) {
-    printf("Vector malloc() failure.");
-  } else {
-    for (i = 0; i < row; i++) {
-      *(ret + i) = 0.0;
-    }
-  }
-  return ret;
-}
+void Cgmres::u0_newton(double* u0) {
+  // TODO: add Newton method using ddHduu
 
-double* Cgmres::matrix(int16_t row, int16_t col) {
-  int16_t i;
-  double* ret;
-  ret = (double*)malloc(sizeof(double) * row * col);
-  if (NULL == ret) {
-    printf("Matrix malloc() failure.");
-  } else {
-    for (i = 0; i < row * col; i++) {
-      *(ret + i) = 0.0;
-    }
-  }
-
-  return ret;
-}
-
-void Cgmres::mov(double* ret, const double* vec, const int16_t row) {
-  int16_t i;
-  for (i = 0; i < row; i++) {
-    ret[i] = vec[i];
+  for (int16_t i = 0; i < dv; i++) {
+    int16_t idx = dim_u * i;
+    mov(&U[idx], u0, dim_u);
   }
 }
-
-void Cgmres::mov(double* ret, const double* mat, const int16_t row, const int16_t col) {
-  int16_t i;
-  for (i = 0; i < row * col; i++) {
-    ret[i] = mat[i];
-  }
-}
-
-void Cgmres::add(double* ret, const double* vec1, const double* vec2, const int16_t row) {
-  int16_t i;
-  for (i = 0; i < row; i++) {
-    ret[i] = vec1[i] + vec2[i];
-  }
-}
-
-void Cgmres::add(double* ret, const double* mat1, const double* mat2, const int16_t row, const int16_t col) {
-  int16_t i;
-  for (i = 0; i < row * col; i++) {
-    ret[i] = mat1[i] + mat2[i];
-  }
-}
-
-void Cgmres::sub(double* ret, const double* vec1, const double* vec2, const int16_t row) {
-  int16_t i;
-  for (i = 0; i < row; i++) {
-    ret[i] = vec1[i] - vec2[i];
-  }
-}
-
-void Cgmres::sub(double* ret, const double* mat1, const double* mat2, const int16_t row, const int16_t col) {
-  int16_t i;
-  for (i = 0; i < row * col; i++) {
-    ret[i] = mat1[i] - mat2[i];
-  }
-}
-
-void Cgmres::mul(double* ret, const double* vec, const double c, const int16_t row) {
-  int16_t i;
-  for (i = 0; i < row; i++) {
-    ret[i] = vec[i] * c;
-  }
-}
-
-void Cgmres::mul(double* ret, const double* mat, const double c, const int16_t row, const int16_t col) {
-  int16_t i;
-  for (i = 0; i < row * col; i++) {
-    ret[i] = mat[i] * c;
-  }
-}
-
-void Cgmres::mul(double* ret, const double* mat, const double* vec, const int16_t row, const int16_t col) {
-  int16_t i, j, idx;
-#ifdef DEBUG_MODE
-  if (ret == vec) {
-    printf("%s pointer error !\n", __func__);
-    exit(-1);
-  }
-#endif
-  for (i = 0; i < row; i++) {
-    ret[i] = 0.0;
-  }
-
-  for (j = 0; j < col; j++) {
-    for (i = 0; i < row; i++) {
-      idx = row * j + i;
-      ret[i] += mat[idx] * vec[j];
-    }
-  }
-}
-
-void Cgmres::mul(double* ret, const double* mat1, const double* mat2, const int16_t l, const int16_t row, const int16_t col) {
-  int16_t i, j, k, idx1, idx2, idx3;
-#ifdef DEBUG_MODE
-  if (ret == mat1 || ret == mat2) {
-    printf("%s pointer error !\n", __func__);
-    exit(-1);
-  }
-#endif
-
-  for (i = 0; i < row; i++) {
-    for (j = 0; j < col; j++) {
-      idx1 = col * i + j;
-      ret[idx1] = 0;
-    }
-
-    for (k = 0; k < l; k++) {
-      idx2 = col * i + k;
-      for (j = 0; j < col; j++) {
-        idx1 = col * i + j;
-        idx3 = col * k + j;
-        ret[idx1] += mat1[idx2] * mat2[idx3];
-      }
-    }
-  }
-}
-
-void Cgmres::div(double* ret, const double* vec, const double c, const int16_t row) {
-  int16_t i;
-  double inv_c = 1.0 / c;
-  for (i = 0; i < row; i++) {
-    ret[i] = vec[i] * inv_c;
-  }
-}
-
-void Cgmres::div(double* ret, const double* mat, const double c, const int16_t row, const int16_t col) {
-  int16_t i;
-  double inv_c = 1.0 / c;
-  for (i = 0; i < row * col; i++) {
-    ret[i] = mat[i] * inv_c;
-  }
-}
-
-double Cgmres::norm(const double* vec, int16_t n) {
-  int16_t i;
-  double ret = 0;
-  for (i = 0; i < n; i++) {
-    ret += vec[i] * vec[i];
-  }
-
-  return sqrt(ret);
-}
-
-double Cgmres::dot(const double* vec1, const double* vec2, const int16_t n) {
-  int16_t i;
-  double ret = 0;
-  for (i = 0; i < n; i++) {
-    ret += vec1[i] * vec2[i];
-  }
-
-  return ret;
-}
-
-double Cgmres::sign(const double x) { return (x < 0.0) ? -1.0 : 1.0; }
 
 void Cgmres::F_func(double* ret, const double* U, const double* x, const double t) {
   int16_t i, idx_x, idx_u;
