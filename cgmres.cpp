@@ -4,23 +4,23 @@
 
 Cgmres::Cgmres(double* u0) {
   t = 0.0;
-  U = vector(dim_u * dv);
-  dUdt = vector(dim_u * dv);
+  U = new double[dim_u * dv];
+  dUdt = new double[dim_u * dv];
 
-  x_dxh = vector(dim_x);
-  xtau = vector(dim_x * (dv + 1));
-  ltau = vector(dim_x * (dv + 1));
+  x_dxh = new double[dim_x];
+  xtau = new double[dim_x * (dv + 1)];
+  ltau = new double[dim_x * (dv + 1)];
 
-  F_dxh_h = vector(dim_u * dv);
-  F_dUh_dxh_h = vector(dim_u * dv);
-  b_vec = vector(dim_u * dv);
+  F_dxh_h = new double[dim_u * dv];
+  F_dUh_dxh_h = new double[dim_u * dv];
+  b_vec = new double[dim_u * dv];
 
-  v_mat = matrix(dim_u * dv, k_max + 1);
-  h_mat = matrix(k_max + 1, k_max + 1);
-  rho_e_vec = vector(k_max + 1);
-  g_vec = matrix(g_vec_len, k_max);
+  v_mat = new double[(dim_u * dv) * (k_max + 1)];
+  h_mat = new double[(k_max + 1) * (k_max + 1)];
+  rho_e_vec = new double[k_max + 1];
+  g_vec = new double[(g_vec_len) * (k_max)];
 
-  U_buf = vector(dim_u * dv);
+  U_buf = new double[dim_u * dv];
 
   for (int16_t i = 0; i < dv; i++) {
     int16_t idx = dim_u * i;
@@ -29,23 +29,23 @@ Cgmres::Cgmres(double* u0) {
 }
 
 Cgmres::~Cgmres(void) {
-  free(U);
-  free(dUdt);
+  delete[] U;
+  delete[] dUdt;
 
-  free(x_dxh);
-  free(xtau);
-  free(ltau);
+  delete[] x_dxh;
+  delete[] xtau;
+  delete[] ltau;
 
-  free(F_dxh_h);
-  free(F_dUh_dxh_h);
-  free(b_vec);
+  delete[] F_dxh_h;
+  delete[] F_dUh_dxh_h;
+  delete[] b_vec;
 
-  free(v_mat);
-  free(h_mat);
-  free(rho_e_vec);
-  free(g_vec);
+  delete[] v_mat;
+  delete[] h_mat;
+  delete[] rho_e_vec;
+  delete[] g_vec;
 
-  free(U_buf);
+  delete[] U_buf;
 }
 
 void Cgmres::u0_newton(double* u0) {

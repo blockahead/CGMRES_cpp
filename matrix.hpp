@@ -6,40 +6,6 @@
 
 #define DEBUG_MODE
 
-// vector allocation
-inline double* vector(int16_t row) {
-  int16_t i;
-  double* ret;
-  ret = (double*)malloc(sizeof(double) * row);
-#ifdef DEBUG_MODE
-  if (NULL == ret) {
-    printf("Vector malloc() failure.");
-  }
-#endif
-  for (i = 0; i < row; i++) {
-    *(ret + i) = 0.0;
-  }
-
-  return ret;
-}
-
-// vector allocation
-inline double* matrix(int16_t row, int16_t col) {
-  int16_t i;
-  double* ret;
-  ret = (double*)malloc(sizeof(double) * row * col);
-#ifdef DEBUG_MODE
-  if (NULL == ret) {
-    printf("Matrix malloc() failure.");
-  }
-#endif
-  for (i = 0; i < row * col; i++) {
-    *(ret + i) = 0.0;
-  }
-
-  return ret;
-}
-
 // ret = vec
 inline void mov(double* ret, const double* vec, const int16_t row) {
   int16_t i;

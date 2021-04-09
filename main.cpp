@@ -26,9 +26,9 @@ int main(void) {
   double* u;
   double* dxdt;
 
-  x = vector(Simulator::dim_x);
-  u = vector(Simulator::dim_u);
-  dxdt = vector(Simulator::dim_x);
+  x = new double[Simulator::dim_x];
+  u = new double[Simulator::dim_u];
+  dxdt = new double[Simulator::dim_x];
 
   // semiactive_damper
 #ifdef semiactive_damper
@@ -99,6 +99,10 @@ int main(void) {
 
     printf("Elapsed time = %f\n", t_all);
   }
+
+  delete[] x;
+  delete[] u;
+  delete[] dxdt;
 
   return 0;
 }
