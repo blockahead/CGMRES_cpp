@@ -77,13 +77,12 @@ int main(void) {
       t_all += (t_end - t_start);
 
       // x = x + dxdt * dt
-      double dt = Simulator::dt;
       Simulator::dxdt(dxdt, x, u);
-      mul(dxdt, dxdt, dt, Simulator::dim_x);
+      mul(dxdt, dxdt, Simulator::dt, Simulator::dim_x);
       add(x, x, dxdt, Simulator::dim_x);
 
-      fprintf(fp_x, "%f", dt * i);
-      fprintf(fp_u, "%f", dt * i);
+      fprintf(fp_x, "%f", Simulator::dt * i);
+      fprintf(fp_u, "%f", Simulator::dt * i);
       for (int j = 0; j < Simulator::dim_x; j++) {
         fprintf(fp_x, "\t%f", x[j]);
       }
