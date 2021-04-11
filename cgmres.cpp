@@ -3,6 +3,8 @@
 #define DEBUG_MODE
 
 Cgmres::Cgmres(double* u0) {
+  int16_t idx;
+
   t = 0.0;
   U = new double[dim_u * dv];
   dUdt = new double[dim_u * dv];
@@ -23,7 +25,7 @@ Cgmres::Cgmres(double* u0) {
   U_buf = new double[dim_u * dv];
 
   for (int16_t i = 0; i < dv; i++) {
-    int16_t idx = dim_u * i;
+    idx = dim_u * i;
     mov(&U[idx], u0, dim_u);
   }
 }
@@ -50,9 +52,10 @@ Cgmres::~Cgmres(void) {
 
 void Cgmres::u0_newton(double* u0) {
   // TODO: add Newton method using ddHduu
+  int16_t idx;
 
   for (int16_t i = 0; i < dv; i++) {
-    int16_t idx = dim_u * i;
+    idx = dim_u * i;
     mov(&U[idx], u0, dim_u);
   }
 }
@@ -76,7 +79,7 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
 
   // State equation
   // x(0) = x
-  // x(i+1) = x(i) + dxdt(x(i),u(i)) * dtau
+  // x(i + 1) = x(i) + dxdt(x(i), u(i)) * dtau
   mov(xtau, x, dim_x);
   for (i = 0; i < dv; i++) {
     idx_x = dim_x * i;
@@ -88,7 +91,7 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
 
   // Adjoint equation
   // lmd(N) = dPhidx(x(N))
-  // lmd(i) = lmd(i+1) + dHdx(x(i),u(i),lmd(i+1)) * dtau
+  // lmd(i) = lmd(i + 1) + dHdx(x(i), u(i), lmd(i + 1)) * dtau
   Model::dPhidx(&ltau[dim_x * dv], &xtau[dim_x * dv]);
   for (i = dv - 1; i >= 0; i--) {
     idx_x = dim_x * i;
@@ -98,7 +101,7 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
     add(&ltau[idx_x], &ltau[idx_x], &ltau[idx_x + dim_x], dim_x);
   }
 
-  // F(i) = dHdU(x(i),u(i),lmd(i+1))
+  // F(i) = dHdU(x(i), u(i), lmd(i + 1))
   for (i = 0; i < dv; i++) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
@@ -110,7 +113,7 @@ void Cgmres::gmres() {
   int16_t len, i, j, k, idx_v1, idx_v2, idx_h, idx_g;
   double buf;
 
-  // F_dUh_dxh_h = F(U + dUdt * h, x + dxdt * h, t + h)
+  // F(U + dUdt * h, x + dxdt * h, t + h)
   len = dim_u * dv;
   mul(U_buf, dUdt, h, len);
   add(U_buf, U_buf, U, len);
@@ -131,17 +134,17 @@ void Cgmres::gmres() {
     return;
   }
 
-  // v_mat[:][0] = r0 / rho
+  // v(0) = r0 / rho
   div(&v_mat[0], U_buf, rho_e_vec[0], len);
 
   for (k = 0; k < k_max; k++) {
-    // F_dUh_dxh_h = F(U + v[k] * h, x + dxdt * h, t + h)
+    // F(U + v(k) * h, x + dxdt * h, t + h)
     idx_v1 = len * k;
     mul(U_buf, &v_mat[idx_v1], h, len);
     add(U_buf, U, U_buf, len);
     F_func(F_dUh_dxh_h, U_buf, x_dxh, t + h);
 
-    // v[k + 1] = (F(U + v[k] * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
+    // v(k + 1) = (F(U + v(k) * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
     idx_v1 = len * (k + 1);
     sub(U_buf, F_dUh_dxh_h, F_dxh_h, len);
     div(&v_mat[idx_v1], U_buf, h, len);
@@ -213,19 +216,19 @@ void Cgmres::gmres() {
 void Cgmres::control(double* u, const double* x) {
   int16_t len;
 
-  // x_dxh = x + dxdt * h
+  // x + dxdt * h
   len = dim_x;
   Model::dxdt(x_dxh, x, U);
   mul(x_dxh, x_dxh, h, len);
   add(x_dxh, x_dxh, x, len);
 
-  // F_dxh_h = F(U, x + dxdt * h, t + h)
+  // F(U, x + dxdt * h, t + h)
   F_func(F_dxh_h, U, x_dxh, t + h);
 
-  // rhs = F(U, x, t)
+  // F(U, x, t)
   F_func(b_vec, U, x, t);
 
-  // rhs = ( F(U, x, t) * ( 1 - zeta * h ) - F(U, x + dxdt * h, t + h) ) / h;
+  // (F(U, x, t) * (1 - zeta * h) - F(U, x + dxdt * h, t + h)) / h
   len = dim_u * dv;
   mul(b_vec, b_vec, (1 - zeta * h), len);
   sub(b_vec, b_vec, F_dxh_h, len);
@@ -234,7 +237,7 @@ void Cgmres::control(double* u, const double* x) {
   // GMRES
   gmres();
 
-  // U = U + dUdt * dt;
+  // U = U + dUdt * dt
   len = dim_u * dv;
   mul(U_buf, dUdt, dt, len);
   add(U, U, U_buf, len);
