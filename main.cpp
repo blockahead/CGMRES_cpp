@@ -63,6 +63,23 @@ int main(void) {
   dxdt[3] = 0.0;
 #endif
 
+  // arm_type_inverted_pendulum
+#ifdef arm_type_inverted_pendulum
+  x[0] = 3.14159265358979;
+  x[1] = 3.14159265358979;
+  x[2] = 0.0;
+  x[3] = 0.0;
+
+  u[0] = 0.0;
+  u[1] = 3.0;
+  u[2] = 0.01;
+
+  dxdt[0] = 0.0;
+  dxdt[1] = 0.0;
+  dxdt[2] = 0.0;
+  dxdt[3] = 0.0;
+#endif
+
   Cgmres controller = Cgmres(u);
 
   fp_x = fopen("x.txt", "w");
