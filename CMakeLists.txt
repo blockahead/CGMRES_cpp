@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-
-# include(CTest)
-# enable_testing()
+project(CGMRES_cpp)
 
 # Semiactive damper model
 add_executable(semiactive_damper
