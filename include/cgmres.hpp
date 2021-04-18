@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "matrix.hpp"
-#include "semiactive_damper/model.hpp"
+#include "model.hpp"
 
 class Cgmres : public Model {
  public:

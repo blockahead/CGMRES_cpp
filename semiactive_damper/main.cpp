@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#include <cgmres.hpp>
 #include <iostream>
+#include <matrix.hpp>
 
-#include "cgmres.hpp"
-#include "matrix.hpp"
-#include "semiactive_damper/simulator.hpp"
-
-#define semiactive_damper
+#include "simulator.hpp"
 
 double getEtime(void) {
   struct timeval tv;
@@ -31,7 +29,6 @@ int main(void) {
   dxdt = new double[Simulator::dim_x];
 
   // semiactive_damper
-#ifdef semiactive_damper
   x[0] = 2.0;
   x[1] = 0.0;
 
@@ -41,44 +38,6 @@ int main(void) {
 
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
-#endif
-
-  // mass_spring_damper
-#ifdef mass_spring_damper
-  x[0] = 2.0;
-  x[1] = 2.0;
-  x[2] = 0.0;
-  x[3] = 0.0;
-
-  u[0] = 0.0;
-  u[1] = 0.0;
-  u[2] = 10.0;
-  u[3] = 10.0;
-  u[4] = 5e-4;
-  u[5] = 5e-4;
-
-  dxdt[0] = 0.0;
-  dxdt[1] = 0.0;
-  dxdt[2] = 0.0;
-  dxdt[3] = 0.0;
-#endif
-
-  // arm_type_inverted_pendulum
-#ifdef arm_type_inverted_pendulum
-  x[0] = 3.14159265358979;
-  x[1] = 3.14159265358979;
-  x[2] = 0.0;
-  x[3] = 0.0;
-
-  u[0] = 0.0;
-  u[1] = 3.0;
-  u[2] = 0.01;
-
-  dxdt[0] = 0.0;
-  dxdt[1] = 0.0;
-  dxdt[2] = 0.0;
-  dxdt[3] = 0.0;
-#endif
 
   Cgmres controller = Cgmres(u);
 
