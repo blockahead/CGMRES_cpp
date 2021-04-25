@@ -23,10 +23,12 @@ int main(void) {
   double* x;
   double* u;
   double* dxdt;
+  double* pt;
 
   x = new double[Simulator::dim_x];
   u = new double[Simulator::dim_u];
   dxdt = new double[Simulator::dim_x];
+  pt = new double[2 * (50 + 1)];
 
   // mass_spring_damper
   x[0] = 2.0;
@@ -46,7 +48,13 @@ int main(void) {
   dxdt[2] = 0.0;
   dxdt[3] = 0.0;
 
+  for (int i = 0; i < 50 + 1; i++) {
+    pt[2 * i + 0] = 1;
+    pt[2 * i + 1] = -1;
+  }
+
   Cgmres controller = Cgmres(u);
+  controller.set_p(pt);
 
   fp_x = fopen("x.txt", "w");
   fp_u = fopen("u.txt", "w");

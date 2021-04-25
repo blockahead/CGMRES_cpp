@@ -13,6 +13,8 @@ class Model {
   static constexpr uint16_t dummy = 1;
   // Number of variable
   static constexpr uint16_t dim_u = control_input + constraint + dummy;
+  // Number of parameter
+  static constexpr uint16_t dim_p = 0;
 
   // Sampling period (s)
   static constexpr double dt = 0.001;
@@ -31,7 +33,7 @@ class Model {
   // Maximum iteration of GMRES
   static constexpr uint16_t k_max = 5;
 
-  static void dxdt(double* ret, const double* x, const double* u) {
+  static void dxdt(double* ret, const double* x, const double* u, const double* p) {
     ret[0] = x[1];
     ret[1] = a * x[0] + b * u[0] * x[1];
   }
@@ -41,18 +43,18 @@ class Model {
     ret[1] = x[1] * sf1;
   }
 
-  static void dHdx(double* ret, const double* x, const double* u, const double* lmd) {
+  static void dHdx(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = x[0] * q0 + a * lmd[1];
     ret[1] = x[1] * q1 + lmd[0] + b * u[0] * lmd[1];
   }
 
-  static void dHdu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void dHdu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = r0 * u[0] + b * x[1] * lmd[1] + 2 * u[2] * (u[0] - uc);
     ret[1] = -r1 + 2 * u[1] * u[2];
     ret[2] = (u[0] - uc) * (u[0] - uc) + u[1] * u[1] - ur * ur;
   }
 
-  static void ddHduu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void ddHduu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = r0 + 2 * u[2];
     ret[1] = 0;
     ret[2] = 2 * (u[0] - uc);

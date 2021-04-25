@@ -11,6 +11,7 @@ class Cgmres : public Model {
   Cgmres(double* u0);
   ~Cgmres(void);
   void u0_newton(double* u0);
+  void set_p(const double* pt);
   void control(double* u, const double* x);
 
  private:
@@ -25,6 +26,7 @@ class Cgmres : public Model {
   double* x_dxh;
   double* xtau;
   double* ltau;
+  double* ptau;
 
   double* F_dxh_h;
   double* F_dUh_dxh_h;

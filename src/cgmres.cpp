@@ -12,6 +12,7 @@ Cgmres::Cgmres(double* u0) {
   x_dxh = new double[dim_x];
   xtau = new double[dim_x * (dv + 1)];
   ltau = new double[dim_x * (dv + 1)];
+  ptau = new double[dim_p * (dv + 1)];
 
   F_dxh_h = new double[dim_u * dv];
   F_dUh_dxh_h = new double[dim_u * dv];
@@ -37,6 +38,7 @@ Cgmres::~Cgmres(void) {
   delete[] x_dxh;
   delete[] xtau;
   delete[] ltau;
+  delete[] ptau;
 
   delete[] F_dxh_h;
   delete[] F_dUh_dxh_h;
@@ -60,8 +62,15 @@ void Cgmres::u0_newton(double* u0) {
   }
 }
 
+void Cgmres::set_p(const double* pt) {
+  int16_t len;
+
+  len = dim_p * (dv + 1);
+  mov(ptau, pt, len);
+}
+
 void Cgmres::F_func(double* ret, const double* U, const double* x, const double t) {
-  int16_t i, idx_x, idx_u;
+  int16_t i, idx_x, idx_u, idx_p;
   double dtau;
 
 #ifdef DEBUG_MODE
@@ -79,24 +88,26 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
 
   // State equation
   // x(0) = x
-  // x(i + 1) = x(i) + dxdt(x(i), u(i)) * dtau
+  // x(i + 1) = x(i) + dxdt(x(i), u(i), p(i)) * dtau
   mov(xtau, x, dim_x);
   for (i = 0; i < dv; i++) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
-    Model::dxdt(&xtau[idx_x + dim_x], &xtau[idx_x], &U[idx_u]);
+    idx_p = dim_p * i;
+    Model::dxdt(&xtau[idx_x + dim_x], &xtau[idx_x], &U[idx_u], &ptau[idx_p]);
     mul(&xtau[idx_x + dim_x], &xtau[idx_x + dim_x], dtau, dim_x);
     add(&xtau[idx_x + dim_x], &xtau[idx_x + dim_x], &xtau[idx_x], dim_x);
   }
 
   // Adjoint equation
-  // lmd(N) = dPhidx(x(N))
-  // lmd(i) = lmd(i + 1) + dHdx(x(i), u(i), lmd(i + 1)) * dtau
-  Model::dPhidx(&ltau[dim_x * dv], &xtau[dim_x * dv]);
+  // lmd(N) = dPhidx(x(N), p(N))
+  // lmd(i) = lmd(i + 1) + dHdx(x(i), u(i), p(i), lmd(i + 1)) * dtau
+  Model::dPhidx(&ltau[dim_x * dv], &xtau[dim_x * dv], &ptau[dim_p * dv]);
   for (i = dv - 1; i >= 0; i--) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
-    Model::dHdx(&ltau[idx_x], &xtau[idx_x], &U[idx_u], &ltau[idx_x + dim_x]);
+    idx_p = dim_p * i;
+    Model::dHdx(&ltau[idx_x], &xtau[idx_x], &U[idx_u], &ptau[idx_p], &ltau[idx_x + dim_x]);
     mul(&ltau[idx_x], &ltau[idx_x], dtau, dim_x);
     add(&ltau[idx_x], &ltau[idx_x], &ltau[idx_x + dim_x], dim_x);
   }
@@ -105,7 +116,8 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
   for (i = 0; i < dv; i++) {
     idx_x = dim_x * i;
     idx_u = dim_u * i;
-    Model::dHdu(&ret[idx_u], &xtau[idx_x], &U[idx_u], &ltau[idx_x + dim_x]);
+    idx_p = dim_p * i;
+    Model::dHdu(&ret[idx_u], &xtau[idx_x], &U[idx_u], &ptau[idx_p], &ltau[idx_x + dim_x]);
   }
 }
 
@@ -218,7 +230,7 @@ void Cgmres::control(double* u, const double* x) {
 
   // x + dxdt * h
   len = dim_x;
-  Model::dxdt(x_dxh, x, U);
+  Model::dxdt(x_dxh, x, U, ptau);
   mul(x_dxh, x_dxh, h, len);
   add(x_dxh, x_dxh, x, len);
 

@@ -13,6 +13,8 @@ class Model {
   static constexpr uint16_t dummy = 2;
   // Number of variable
   static constexpr uint16_t dim_u = control_input + constraint + dummy;
+  // Number of parameter
+  static constexpr uint16_t dim_p = 2;
 
   // Sampling period (s)
   static constexpr double dt = 0.001;
@@ -31,28 +33,28 @@ class Model {
   // Maximum iteration of GMRES
   static constexpr uint16_t k_max = 5;
 
-  static void dxdt(double* ret, const double* x, const double* u) {
+  static void dxdt(double* ret, const double* x, const double* u, const double* p) {
     ret[0] = x[2];
     ret[1] = x[3];
     ret[2] = -(k1 * k2) / m1 * x[0] + k2 / m1 * x[1] - (d1 + d2) / m1 * x[2] + d2 / m1 * x[3] + u[0] / m1;
     ret[3] = k2 / m2 * x[0] - k2 / m2 * x[1] + d2 / m2 * x[2] - d2 / m2 * x[3] + u[1] / m2;
   }
 
-  static void dPhidx(double* ret, const double* x) {
-    ret[0] = x[0] * sf0;
-    ret[1] = x[1] * sf1;
+  static void dPhidx(double* ret, const double* x, const double* p) {
+    ret[0] = -(p[0] - x[0]) * sf0;
+    ret[1] = -(p[1] - x[1]) * sf1;
     ret[2] = x[2] * sf2;
     ret[3] = x[3] * sf3;
   }
 
-  static void dHdx(double* ret, const double* x, const double* u, const double* lmd) {
-    ret[0] = x[0] * q0 - (k1 + k2) / m1 * lmd[2] + k2 / m2 * lmd[3];
-    ret[1] = x[1] * q1 + k2 / m1 * lmd[2] - k2 / m2 * lmd[3];
+  static void dHdx(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
+    ret[0] = -(p[0] - x[0]) * q0 - (k1 + k2) / m1 * lmd[2] + k2 / m2 * lmd[3];
+    ret[1] = -(p[1] - x[1]) * q1 + k2 / m1 * lmd[2] - k2 / m2 * lmd[3];
     ret[2] = x[2] * q2 + lmd[0] - (d1 + d2) / m1 * lmd[2] + d2 / m2 * lmd[3];
     ret[3] = x[3] * q3 + lmd[1] + d2 / m1 * lmd[2] - d2 / m2 * lmd[3];
   }
 
-  static void dHdu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void dHdu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = r0 * u[0] + lmd[2] / m1 + 2.0 * u[4] * (u[0] - uc);
     ret[1] = r1 * u[1] + lmd[3] / m2 + 2.0 * u[5] * (u[1] - uc);
     ret[2] = -r2 + 2.0 * u[4] * u[2];
@@ -61,7 +63,7 @@ class Model {
     ret[5] = (u[1] - uc) * (u[1] - uc) + u[3] * u[3] - ur * ur;
   }
 
-  static void ddHduu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void ddHduu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = r0 + 2 * u[4];
     ret[1] = 0;
     ret[2] = 0;
@@ -108,7 +110,7 @@ class Model {
  private:
   // For objective function
   static constexpr double xf0 = 0.0, xf1 = 0.0;
-  static constexpr double sf0 = 1.0, sf1 = 1.0, sf2 = 10.0, sf3 = 10.0;
+  static constexpr double sf0 = 10.0, sf1 = 10.0, sf2 = 1.0, sf3 = 1.0;
   static constexpr double q0 = 1.0, q1 = 1.0, q2 = 10.0, q3 = 10.0;
   static constexpr double r0 = 0.1, r1 = 0.1, r2 = 0.01, r3 = 0.01;
 

@@ -14,6 +14,8 @@ class Model {
   static constexpr uint16_t dummy = 1;
   // Number of variable
   static constexpr uint16_t dim_u = control_input + constraint + dummy;
+  // Number of parameter
+  static constexpr uint16_t dim_p = 0;
 
   // Sampling period (s)
   static constexpr double dt = 0.001;
@@ -32,14 +34,14 @@ class Model {
   // Maximum iteration of GMRES
   static constexpr uint16_t k_max = 5;
 
-  static void dxdt(double* ret, const double* x, const double* u) {
+  static void dxdt(double* ret, const double* x, const double* u, const double* p) {
     ret[0] = x[2];
     ret[1] = x[3];
     ret[2] = -As * x[2] + Bs * u[0];
     ret[3] = A32 * x[2] * x[2] * sin(x[0] - x[1]) + A52 * sin(x[1]) - A32b * cos(x[0] - x[1]) * u[0] + A32a * cos(x[0] - x[1]) * x[2] + C22 * (x[2] - x[3]);
   }
 
-  static void dPhidx(double* ret, const double* x) {
+  static void dPhidx(double* ret, const double* x, const double* p) {
     // TODO: include xf into arguments
     double xf[4] = {0};
     ret[0] = (x[0] - xf[0]) * sf0;
@@ -48,7 +50,7 @@ class Model {
     ret[3] = (x[3] - xf[3]) * sf3;
   }
 
-  static void dHdx(double* ret, const double* x, const double* u, const double* lmd) {
+  static void dHdx(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     // TODO: include xf into arguments
     double xf[4] = {0};
     ret[0] = (x[0] - xf[0]) * q0 + lmd[3] * (A32 * x[2] * x[2] * cos(x[0] - x[1]) + A32b * sin(x[0] - x[1]) * u[0] - A32a * sin(x[0] - x[1]) * x[2]);
@@ -57,13 +59,13 @@ class Model {
     ret[3] = (x[3] - xf[3]) * q3 + lmd[1] - lmd[3] * C22;
   }
 
-  static void dHdu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void dHdu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = (r0 * u[0]) + lmd[2] * Bs - lmd[3] * A32b * cos(x[0] - x[1]) + (double)(u[2] * (2.0 * u[0] - 2.0 * uc));
     ret[1] = -0.5 * r1 + (2.0 * u[2] * u[1]);
     ret[2] = (u[0] - uc) * (u[0] - uc) + u[1] * u[1] - ur * ur;
   }
 
-  static void ddHduu(double* ret, const double* x, const double* u, const double* lmd) {
+  static void ddHduu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
     ret[0] = r0 + 2 * u[2];
     ret[1] = 0;
     ret[2] = 2 * u[0] - 2 * uc;
