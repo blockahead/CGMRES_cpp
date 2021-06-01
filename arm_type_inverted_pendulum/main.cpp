@@ -23,10 +23,12 @@ int main(void) {
   double* x;
   double* u;
   double* dxdt;
+  double* pt;
 
   x = new double[Simulator::dim_x];
   u = new double[Simulator::dim_u];
   dxdt = new double[Simulator::dim_x];
+  pt = new double[2 * (25 + 1)];
 
   // arm_type_inverted_pendulum
   x[0] = 3.14159265358979;
@@ -43,8 +45,14 @@ int main(void) {
   dxdt[2] = 0.0;
   dxdt[3] = 0.0;
 
+  for (int i = 0; i < 25 + 1; i++) {
+    pt[2 * i + 0] = 3.14159265358979 / 4.0;
+    pt[2 * i + 1] = 0;
+  }
+
   Cgmres controller = Cgmres(u);
-  controller.u0_newton(u, x, NULL, 10);
+  controller.set_p(pt);
+  controller.u0_newton(u, x, pt, 10);
 
   fp_x = fopen("x.txt", "w");
   fp_u = fopen("u.txt", "w");

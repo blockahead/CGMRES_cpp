@@ -15,7 +15,7 @@ class Model {
   // Number of variable
   static constexpr uint16_t dim_u = control_input + constraint + dummy;
   // Number of parameter
-  static constexpr uint16_t dim_p = 0;
+  static constexpr uint16_t dim_p = 2;
 
   // Sampling period (s)
   static constexpr double dt = 0.001;
@@ -42,21 +42,17 @@ class Model {
   }
 
   static void dPhidx(double* ret, const double* x, const double* p) {
-    // TODO: include xf into arguments
-    double xf[4] = {0};
-    ret[0] = (x[0] - xf[0]) * sf0;
-    ret[1] = (x[1] - xf[1]) * sf1;
-    ret[2] = (x[2] - xf[2]) * sf2;
-    ret[3] = (x[3] - xf[3]) * sf3;
+    ret[0] = (x[0] - p[0]) * sf0;
+    ret[1] = (x[1] - p[1]) * sf1;
+    ret[2] = x[2] * sf2;
+    ret[3] = x[3] * sf3;
   }
 
   static void dHdx(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
-    // TODO: include xf into arguments
-    double xf[4] = {0};
-    ret[0] = (x[0] - xf[0]) * q0 + lmd[3] * (A32 * x[2] * x[2] * cos(x[0] - x[1]) + A32b * sin(x[0] - x[1]) * u[0] - A32a * sin(x[0] - x[1]) * x[2]);
-    ret[1] = (x[1] - xf[1]) * q1 + lmd[3] * (-A32 * x[2] * x[2] * cos(x[0] - x[1]) + A52 * cos(x[1]) - A32b * sin(x[0] - x[1]) * u[0] + A32a * sin(x[0] - x[1]) * x[2]);
-    ret[2] = (x[2] - xf[2]) * q2 + lmd[0] - lmd[2] * As + lmd[3] * (0.2e1 * A32 * x[2] * sin(x[0] - x[1]) + A32a * cos(x[0] - x[1]) + C22);
-    ret[3] = (x[3] - xf[3]) * q3 + lmd[1] - lmd[3] * C22;
+    ret[0] = (x[0] - p[0]) * q0 + lmd[3] * (A32 * x[2] * x[2] * cos(x[0] - x[1]) + A32b * sin(x[0] - x[1]) * u[0] - A32a * sin(x[0] - x[1]) * x[2]);
+    ret[1] = (x[1] - p[1]) * q1 + lmd[3] * (-A32 * x[2] * x[2] * cos(x[0] - x[1]) + A52 * cos(x[1]) - A32b * sin(x[0] - x[1]) * u[0] + A32a * sin(x[0] - x[1]) * x[2]);
+    ret[2] = x[2] * q2 + lmd[0] - lmd[2] * As + lmd[3] * (0.2e1 * A32 * x[2] * sin(x[0] - x[1]) + A32a * cos(x[0] - x[1]) + C22);
+    ret[3] = x[3] * q3 + lmd[1] - lmd[3] * C22;
   }
 
   static void dHdu(double* ret, const double* x, const double* u, const double* p, const double* lmd) {
