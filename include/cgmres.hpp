@@ -10,8 +10,8 @@ class Cgmres : public Model {
  public:
   Cgmres(double* u0);
   ~Cgmres(void);
-  void u0_newton(double* u0);
   void set_p(const double* pt);
+  void u0_newton(double* u0, const double* x0, const double* p0, const int16_t n_loop);
   void control(double* u, const double* x);
 
  private:

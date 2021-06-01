@@ -44,6 +44,7 @@ int main(void) {
   dxdt[3] = 0.0;
 
   Cgmres controller = Cgmres(u);
+  controller.u0_newton(u, x, NULL, 10);
 
   fp_x = fopen("x.txt", "w");
   fp_u = fopen("u.txt", "w");

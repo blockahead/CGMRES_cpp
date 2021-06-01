@@ -25,6 +25,7 @@ Cgmres::Cgmres(double* u0) {
 
   U_buf = new double[dim_u * dv];
 
+  // U(i) = u0
   for (int16_t i = 0; i < dv; i++) {
     idx = dim_u * i;
     mov(&U[idx], u0, dim_u);
@@ -52,21 +53,33 @@ Cgmres::~Cgmres(void) {
   delete[] U_buf;
 }
 
-void Cgmres::u0_newton(double* u0) {
-  // TODO: add Newton method using ddHduu
-  int16_t idx;
-
-  for (int16_t i = 0; i < dv; i++) {
-    idx = dim_u * i;
-    mov(&U[idx], u0, dim_u);
-  }
-}
-
 void Cgmres::set_p(const double* pt) {
   int16_t len;
 
   len = dim_p * (dv + 1);
   mov(ptau, pt, len);
+}
+
+void Cgmres::u0_newton(double* u0, const double* x0, const double* p0, const int16_t n_loop) {
+  int16_t idx;
+  double lmd0[dim_x], vec[dim_u], mat[dim_u * dim_u];
+
+  dPhidx(lmd0, x0, p0);
+
+  // u0 = u0 - dHduu \ dHdu
+  for (int16_t i = 0; i < n_loop; i++) {
+    dHdu(vec, x0, u0, p0, lmd0);
+    ddHduu(mat, x0, u0, p0, lmd0);
+    linsolve(vec, mat, dim_u);
+
+    sub(u0, u0, vec, dim_u);
+  }
+
+  // U(i)  = u0
+  for (int16_t i = 0; i < dv; i++) {
+    idx = dim_u * i;
+    mov(&U[idx], u0, dim_u);
+  }
 }
 
 void Cgmres::F_func(double* ret, const double* U, const double* x, const double t) {
