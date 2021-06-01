@@ -38,7 +38,7 @@ class Model {
     ret[1] = a * x[0] + b * u[0] * x[1];
   }
 
-  static void dPhidx(double* ret, const double* x) {
+  static void dPhidx(double* ret, const double* x, const double* p) {
     ret[0] = x[0] * sf0;
     ret[1] = x[1] * sf1;
   }
