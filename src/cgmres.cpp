@@ -88,10 +88,7 @@ void Cgmres::F_func(double* ret, const double* U, const double* x, const double 
 
 #ifdef DEBUG_MODE
   if (ret == U) {
-    printf(
-        "%s pointer error ! (U_vec_tmp is overwritten due to the same address "
-        "of ret)\n",
-        __func__);
+    printf("%s pointer error ! (U_vec_tmp is overwritten due to the same address of ret)\n", __func__);
     exit(-1);
   }
 #endif
