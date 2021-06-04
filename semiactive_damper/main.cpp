@@ -39,7 +39,7 @@ int main(void) {
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
 
-  Cgmres controller = Cgmres(u);
+  Cgmres<Model> controller = Cgmres<Model>(u);
   controller.u0_newton(u, x, NULL, 10);
 
   fp_x = fopen("x.txt", "w");

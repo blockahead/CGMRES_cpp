@@ -50,7 +50,7 @@ int main(void) {
     pt[2 * i + 1] = 0;
   }
 
-  Cgmres controller = Cgmres(u);
+  Cgmres<Model> controller = Cgmres<Model>(u);
   controller.set_p(pt);
   controller.u0_newton(u, x, pt, 10);
 
