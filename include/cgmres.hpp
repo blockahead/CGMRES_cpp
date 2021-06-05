@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "matrix.hpp"
-#include "model.hpp"
 
 template <class Model>
 class Cgmres : public Model {

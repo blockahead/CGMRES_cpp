@@ -5,6 +5,7 @@
 #include <iostream>
 #include <matrix.hpp>
 
+#include "model.hpp"
 #include "simulator.hpp"
 
 double getEtime(void) {
