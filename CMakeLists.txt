@@ -28,4 +28,13 @@ target_include_directories(arm_type_inverted_pendulum
   PUBLIC arm_type_inverted_pendulum
 )
 
+# Multiple controller
+add_executable(multiple_controller
+  multiple_controller/main.cpp
+)
+target_include_directories(multiple_controller
+  PUBLIC include
+  PUBLIC multiple_controller
+)
+
 set(CMAKE_CXX_FLAGS "-O3 -Wall")
