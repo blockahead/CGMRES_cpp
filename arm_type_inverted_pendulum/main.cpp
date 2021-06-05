@@ -92,6 +92,7 @@ int main(void) {
   delete[] x;
   delete[] u;
   delete[] dxdt;
+  delete[] pt;
 
   return 0;
 }
