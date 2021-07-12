@@ -86,12 +86,14 @@ int main(void) {
     pt2[2 * i + 1] = 0;
   }
 
-  Cgmres<Model1> controller1 = Cgmres<Model1>(u1);
-  Cgmres<Model2> controller2 = Cgmres<Model2>(u2);
+  Cgmres<Model1> controller1 = Cgmres<Model1>();
+  Cgmres<Model2> controller2 = Cgmres<Model2>();
   controller1.set_p(pt1);
   controller2.set_p(pt2);
-  controller1.u0_newton(u1, x1, pt1, 10);
-  controller2.u0_newton(u2, x2, pt2, 10);
+  controller1.init_u0(u1);
+  controller2.init_u0(u2);
+  controller1.init_u0_newton(u1, x1, pt1, 10);
+  controller2.init_u0_newton(u2, x2, pt2, 10);
 
   fp_x1 = fopen("x1.txt", "w");
   fp_u1 = fopen("u1.txt", "w");

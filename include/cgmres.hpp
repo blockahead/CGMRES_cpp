@@ -8,9 +8,7 @@
 template <class Model>
 class Cgmres : public Model {
  public:
-  Cgmres(double* u0) {
-    int16_t idx;
-
+  Cgmres(void) {
     t = 0.0;
     U = new double[dim_u * dv];
     dUdt = new double[dim_u * dv];
@@ -30,12 +28,6 @@ class Cgmres : public Model {
     g_vec = new double[(g_vec_len) * (k_max)];
 
     U_buf = new double[dim_u * dv];
-
-    // U(i) = u0
-    for (int16_t i = 0; i < dv; i++) {
-      idx = dim_u * i;
-      mov(&U[idx], u0, dim_u);
-    }
   }
 
   ~Cgmres(void) {
@@ -66,8 +58,17 @@ class Cgmres : public Model {
     mov(ptau, pt, len);
   }
 
-  void u0_newton(double* u0, const double* x0, const double* p0, const int16_t n_loop) {
+  void init_u0(const double* u0) {
     int16_t idx;
+
+    // U(i) = u0
+    for (int16_t i = 0; i < dv; i++) {
+      idx = dim_u * i;
+      mov(&U[idx], u0, dim_u);
+    }
+  }
+
+  void init_u0_newton(double* u0, const double* x0, const double* p0, const int16_t n_loop) {
     double lmd0[dim_x], vec[dim_u], mat[dim_u * dim_u];
 
     Model::dPhidx(lmd0, x0, p0);
@@ -81,11 +82,7 @@ class Cgmres : public Model {
       sub(u0, u0, vec, dim_u);
     }
 
-    // U(i)  = u0
-    for (int16_t i = 0; i < dv; i++) {
-      idx = dim_u * i;
-      mov(&U[idx], u0, dim_u);
-    }
+    init_u0(u0);
   }
 
   void control(double* u, const double* x) {

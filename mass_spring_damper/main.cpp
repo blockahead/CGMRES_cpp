@@ -54,9 +54,10 @@ int main(void) {
     pt[2 * i + 1] = -1;
   }
 
-  Cgmres<Model> controller = Cgmres<Model>(u);
+  Cgmres<Model> controller = Cgmres<Model>();
   controller.set_p(pt);
-  controller.u0_newton(u, x, pt, 10);
+  controller.init_u0(u);
+  controller.init_u0_newton(u, x, pt, 10);
 
   fp_x = fopen("x.txt", "w");
   fp_u = fopen("u.txt", "w");
