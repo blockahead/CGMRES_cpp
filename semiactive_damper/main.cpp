@@ -42,7 +42,7 @@ int main(void) {
   dxdt[0] = 0.0;
   dxdt[1] = 0.0;
 
-  Cgmres<Model> controller = Cgmres<Model>();
+  Cgmres<Model> controller;
   controller.init_u0(u);
   controller.init_u0_newton(u, x, pt, 10);
 

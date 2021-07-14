@@ -86,8 +86,8 @@ int main(void) {
     pt2[Simulator2::dim_p * i + 1] = 0;
   }
 
-  Cgmres<Model1> controller1 = Cgmres<Model1>();
-  Cgmres<Model2> controller2 = Cgmres<Model2>();
+  Cgmres<Model1> controller1;
+  Cgmres<Model2> controller2;
   controller1.set_p(pt1);
   controller2.set_p(pt2);
   controller1.init_u0(u1);

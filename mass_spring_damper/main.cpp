@@ -54,7 +54,7 @@ int main(void) {
     pt[Simulator::dim_p * i + 1] = -1;
   }
 
-  Cgmres<Model> controller = Cgmres<Model>();
+  Cgmres<Model> controller;
   controller.set_p(pt);
   controller.init_u0(u);
   controller.init_u0_newton(u, x, pt, 10);

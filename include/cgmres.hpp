@@ -313,4 +313,8 @@ class Cgmres : public Model {
   double* g_vec;
 
   double* U_buf;
+
+  // Copy constructor
+  Cgmres(const Cgmres&);
+  Cgmres& operator=(const Cgmres&);
 };
