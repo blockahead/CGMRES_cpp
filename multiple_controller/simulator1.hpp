@@ -7,6 +7,8 @@ class Simulator1 {
   static constexpr double dt = 0.001;
   static constexpr uint16_t dim_x = 4;
   static constexpr uint16_t dim_u = 6;
+  static constexpr uint16_t dim_p = 2;
+  static constexpr uint16_t dv = 50;
 
   static void dxdt(double* ret, const double* x, const double* u) {
     ret[0] = x[2];

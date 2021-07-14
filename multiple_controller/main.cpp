@@ -37,11 +37,11 @@ int main(void) {
   x1 = new double[Simulator1::dim_x];
   u1 = new double[Simulator1::dim_u];
   dxdt1 = new double[Simulator1::dim_x];
-  pt1 = new double[2 * (50 + 1)];
+  pt1 = new double[Simulator1::dim_p * (Simulator1::dv + 1)];
   x2 = new double[Simulator2::dim_x];
   u2 = new double[Simulator2::dim_u];
   dxdt2 = new double[Simulator2::dim_x];
-  pt2 = new double[2 * (25 + 1)];
+  pt2 = new double[Simulator2::dim_p * (Simulator2::dv + 1)];
 
   // mass_spring_damper
   x1[0] = 2.0;
@@ -61,9 +61,9 @@ int main(void) {
   dxdt1[2] = 0.0;
   dxdt1[3] = 0.0;
 
-  for (int i = 0; i < 50 + 1; i++) {
-    pt1[2 * i + 0] = 1;
-    pt1[2 * i + 1] = -1;
+  for (int i = 0; i < Simulator1::dv + 1; i++) {
+    pt1[Simulator1::dim_p * i + 0] = 1;
+    pt1[Simulator1::dim_p * i + 1] = -1;
   }
 
   // arm_type_inverted_pendulum
@@ -81,9 +81,9 @@ int main(void) {
   dxdt2[2] = 0.0;
   dxdt2[3] = 0.0;
 
-  for (int i = 0; i < 25 + 1; i++) {
-    pt2[2 * i + 0] = 3.14159265358979 / 4.0;
-    pt2[2 * i + 1] = 0;
+  for (int i = 0; i < Simulator2::dv + 1; i++) {
+    pt2[Simulator2::dim_p * i + 0] = 3.14159265358979 / 4.0;
+    pt2[Simulator2::dim_p * i + 1] = 0;
   }
 
   Cgmres<Model1> controller1 = Cgmres<Model1>();

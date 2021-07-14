@@ -29,7 +29,7 @@ int main(void) {
   x = new double[Simulator::dim_x];
   u = new double[Simulator::dim_u];
   dxdt = new double[Simulator::dim_x];
-  pt = new double[2 * (25 + 1)];
+  pt = new double[Simulator::dim_p * (Simulator::dv + 1)];
 
   // arm_type_inverted_pendulum
   x[0] = 3.14159265358979;
@@ -46,9 +46,9 @@ int main(void) {
   dxdt[2] = 0.0;
   dxdt[3] = 0.0;
 
-  for (int i = 0; i < 25 + 1; i++) {
-    pt[2 * i + 0] = 3.14159265358979 / 4.0;
-    pt[2 * i + 1] = 0;
+  for (int i = 0; i < Simulator::dv + 1; i++) {
+    pt[Simulator::dim_p * i + 0] = 3.14159265358979 / 4.0;
+    pt[Simulator::dim_p * i + 1] = 0;
   }
 
   Cgmres<Model> controller = Cgmres<Model>();

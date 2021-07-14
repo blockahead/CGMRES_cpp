@@ -24,10 +24,12 @@ int main(void) {
   double* x;
   double* u;
   double* dxdt;
+  double* pt;
 
   x = new double[Simulator::dim_x];
   u = new double[Simulator::dim_u];
   dxdt = new double[Simulator::dim_x];
+  pt = new double[Simulator::dim_p * (Simulator::dv + 1)];
 
   // semiactive_damper
   x[0] = 2.0;
@@ -42,7 +44,7 @@ int main(void) {
 
   Cgmres<Model> controller = Cgmres<Model>();
   controller.init_u0(u);
-  controller.init_u0_newton(u, x, NULL, 10);
+  controller.init_u0_newton(u, x, pt, 10);
 
   fp_x = fopen("x.txt", "w");
   fp_u = fopen("u.txt", "w");
@@ -81,6 +83,7 @@ int main(void) {
   delete[] x;
   delete[] u;
   delete[] dxdt;
+  delete[] pt;
 
   return 0;
 }

@@ -90,7 +90,7 @@ class Cgmres : public Model {
 
     // x + dxdt * h
     len = dim_x;
-    Model::dxdt(x_dxh, x, U, ptau);
+    Model::dxdt(x_dxh, x, &U[0], &ptau[0]);
     mul(x_dxh, x_dxh, h, len);
     add(x_dxh, x_dxh, x, len);
 
@@ -118,7 +118,7 @@ class Cgmres : public Model {
     // This value may not overflow due to loss of trailing digits
     t = t + dt;
 
-    mov(u, U, dim_u);
+    mov(u, &U[0], dim_u);
   }
 
  private:
@@ -139,7 +139,7 @@ class Cgmres : public Model {
     // State equation
     // x(0) = x
     // x(i + 1) = x(i) + dxdt(x(i), u(i), p(i)) * dtau
-    mov(xtau, x, dim_x);
+    mov(&xtau[0], x, dim_x);
     for (i = 0; i < dv; i++) {
       idx_x = dim_x * i;
       idx_u = dim_u * i;
