@@ -177,7 +177,7 @@ class Cgmres : public Model {
     div(Ax, Ax, h, len);
   }
 
-  void gmres(double* dUdt, double* b_vec, const uint16_t len, const uint16_t k_max, const double tol) {
+  void gmres(double* dUdt, const double* b_vec, const uint16_t len, const uint16_t k_max, const double tol) {
     uint16_t k, idx_v1, idx_v2, idx_h, idx_g;
     double v_mat[(len) * (k_max + 1)];
     double h_mat[(k_max + 1) * (k_max + 1)];
