@@ -19,7 +19,6 @@ class Cgmres : public Model {
     ptau = new double[dim_p * (dv + 1)];
 
     F_dxh_h = new double[dim_u * dv];
-    F_dUh_dxh_h = new double[dim_u * dv];
     b_vec = new double[dim_u * dv];
 
     v_mat = new double[(dim_u * dv) * (k_max + 1)];
@@ -40,7 +39,6 @@ class Cgmres : public Model {
     delete[] ptau;
 
     delete[] F_dxh_h;
-    delete[] F_dUh_dxh_h;
     delete[] b_vec;
 
     delete[] v_mat;
@@ -186,25 +184,30 @@ class Cgmres : public Model {
     }
   }
 
+  void Ax_func(double* Ax, const double* dUdt, const int16_t len) {
+    // F(U + dUdt * h, x + dxdt * h, t + h)
+    mul(U_buf, dUdt, h, len);
+    add(U_buf, U_buf, U, len);
+    F_func(Ax, U_buf, x_dxh, t + h);
+
+    // Ax = (F(U + dUdt * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
+    sub(Ax, Ax, F_dxh_h, len);
+    div(Ax, Ax, h, len);
+  }
+
   void gmres() {
     int16_t len, i, j, k, idx_v1, idx_v2, idx_h, idx_g;
     double buf;
 
-    // F(U + dUdt * h, x + dxdt * h, t + h)
-    len = dim_u * dv;
-    mul(U_buf, dUdt, h, len);
-    add(U_buf, U_buf, U, len);
-    F_func(F_dUh_dxh_h, U_buf, x_dxh, t + h);
-
     // Ax = (F(U + dUdt * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
-    sub(U_buf, F_dUh_dxh_h, F_dxh_h, len);
-    div(U_buf, U_buf, h, len);
+    len = dim_u * dv;
+    Ax_func(&v_mat[0], dUdt, len);
 
     // r0 = b - Ax
-    sub(U_buf, b_vec, U_buf, len);
+    sub(&v_mat[0], b_vec, &v_mat[0], len);
 
     // rho = sqrt(r0' * r0)
-    rho_e_vec[0] = norm(U_buf, len);
+    rho_e_vec[0] = norm(&v_mat[0], len);
 
     if (rho_e_vec[0] < tol) {
       k = 0;
@@ -212,20 +215,13 @@ class Cgmres : public Model {
     }
 
     // v(0) = r0 / rho
-    div(&v_mat[0], U_buf, rho_e_vec[0], len);
+    div(&v_mat[0], &v_mat[0], rho_e_vec[0], len);
 
     for (k = 0; k < k_max; k++) {
-      // F(U + v(k) * h, x + dxdt * h, t + h)
-      idx_v1 = len * k;
-      mul(U_buf, &v_mat[idx_v1], h, len);
-      add(U_buf, U, U_buf, len);
-      F_func(F_dUh_dxh_h, U_buf, x_dxh, t + h);
-
       // v(k + 1) = (F(U + v(k) * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
-      idx_v1 = len * (k + 1);
-      sub(U_buf, F_dUh_dxh_h, F_dxh_h, len);
-      div(&v_mat[idx_v1], U_buf, h, len);
+      Ax_func(&v_mat[len * (k + 1)], &v_mat[len * k], len);
 
+      idx_v1 = len * (k + 1);
       // Modified Gram-Schmidt
       for (i = 0; i < k + 1; i++) {
         idx_v2 = len * i;
@@ -319,7 +315,6 @@ class Cgmres : public Model {
   double* ptau;
 
   double* F_dxh_h;
-  double* F_dUh_dxh_h;
   double* b_vec;
 
   double* v_mat;
