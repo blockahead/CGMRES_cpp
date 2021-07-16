@@ -52,7 +52,7 @@ int main(void) {
   }
 
   Cgmres<Model> controller;
-  controller.set_p(pt);
+  controller.set_ptau(pt);
   controller.init_u0(u);
   controller.init_u0_newton(u, x, pt, 10);
 

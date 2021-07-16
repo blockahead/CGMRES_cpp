@@ -51,11 +51,26 @@ class Cgmres : public Model {
     delete[] U_buf;
   }
 
-  void set_p(const double* pt) {
+  double get_dtau(const double t) {
+    return Tf * (1 - exp(-alpha * t)) / (double)dv;
+  }
+
+  void set_ptau(const double* ptau_buf) {
     int16_t len;
 
+    // ptau = [ p(t), p(t + dtau), ..., p(t + dv * dtau) ]
     len = dim_p * (dv + 1);
-    mov(ptau, pt, len);
+    mov(ptau, ptau_buf, len);
+  }
+
+  void set_ptau_repeat(const double* p_buf) {
+    int16_t idx;
+
+    // ptau = [ p(t), p(t), ..., p(t) ]
+    for (int16_t i = 0; i < dv + 1; i++) {
+      idx = dim_p * i;
+      mov(&ptau[idx], p_buf, dim_p);
+    }
   }
 
   void init_u0(const double* u0) {
@@ -134,7 +149,7 @@ class Cgmres : public Model {
 #endif
 
     // Prediction horizon
-    dtau = Tf * (1 - exp(-alpha * t)) / (double)dv;
+    dtau = get_dtau(t);
 
     // State equation
     // x(0) = x
@@ -275,7 +290,6 @@ class Cgmres : public Model {
     add(dUdt, dUdt, U_buf, len);
   }
 
- private:
   // Parameters
   static constexpr uint16_t dim_x = Model::dim_x;
   static constexpr uint16_t dim_u = Model::dim_u;
@@ -290,6 +304,7 @@ class Cgmres : public Model {
   static constexpr double tol = Model::tol;
   static constexpr uint16_t k_max = Model::k_max;
 
+ private:
   // Constants
   static constexpr uint16_t g_vec_len = 3;
 

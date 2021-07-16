@@ -88,8 +88,8 @@ int main(void) {
 
   Cgmres<Model1> controller1;
   Cgmres<Model2> controller2;
-  controller1.set_p(pt1);
-  controller2.set_p(pt2);
+  controller1.set_ptau(pt1);
+  controller2.set_ptau(pt2);
   controller1.init_u0(u1);
   controller2.init_u0(u2);
   controller1.init_u0_newton(u1, x1, pt1, 10);
