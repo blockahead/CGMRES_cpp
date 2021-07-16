@@ -14,8 +14,6 @@ class Cgmres : public Model {
     dUdt = new double[dim_u * dv];
 
     x_dxh = new double[dim_x];
-    xtau = new double[dim_x * (dv + 1)];
-    ltau = new double[dim_x * (dv + 1)];
     ptau = new double[dim_p * (dv + 1)];
 
     F_dxh_h = new double[dim_u * dv];
@@ -29,8 +27,6 @@ class Cgmres : public Model {
     delete[] dUdt;
 
     delete[] x_dxh;
-    delete[] xtau;
-    delete[] ltau;
     delete[] ptau;
 
     delete[] F_dxh_h;
@@ -120,6 +116,8 @@ class Cgmres : public Model {
   void F_func(double* ret, const double* U, const double* x, const double t) {
     uint16_t idx_x, idx_u, idx_p;
     double dtau;
+    double xtau[dim_x * (dv + 1)];
+    double ltau[dim_x * (dv + 1)];
 
 #ifdef DEBUG_MODE
     if (ret == U) {
@@ -177,7 +175,7 @@ class Cgmres : public Model {
     div(Ax, Ax, h, len);
   }
 
-  void gmres(double* dUdt, const double* b_vec, const uint16_t len, const uint16_t k_max, const double tol) {
+  void gmres(double* x, const double* b_vec, const uint16_t len, const uint16_t k_max, const double tol) {
     uint16_t k, idx_v1, idx_v2, idx_h, idx_g;
     double v_mat[(len) * (k_max + 1)];
     double h_mat[(k_max + 1) * (k_max + 1)];
@@ -186,10 +184,8 @@ class Cgmres : public Model {
     double buf;
     double U_buf[len];
 
-    // Ax = (F(U + dUdt * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
-    Ax_func(&v_mat[0], dUdt);
-
-    // r0 = b - Ax
+    // r0 = b - Ax(x0)
+    Ax_func(&v_mat[0], x);
     sub(&v_mat[0], b_vec, &v_mat[0], len);
 
     // rho = sqrt(r0' * r0)
@@ -203,7 +199,7 @@ class Cgmres : public Model {
     div(&v_mat[0], &v_mat[0], rho_e_vec[0], len);
 
     for (k = 0; k < k_max; k++) {
-      // v(k + 1) = (F(U + v(k) * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
+      // v(k + 1) = Ax(v(k))
       Ax_func(&v_mat[len * (k + 1)], &v_mat[len * k]);
 
       idx_v1 = len * (k + 1);
@@ -265,9 +261,9 @@ class Cgmres : public Model {
       rho_e_vec[i] /= h_mat[idx_h];
     }
 
-    // dUdt = dUdt + v_mat * y
+    // x = x + v_mat * y
     mul(&v_mat[len * k_max], v_mat, rho_e_vec, len, k);
-    add(dUdt, dUdt, &v_mat[len * k_max], len);
+    add(x, x, &v_mat[len * k_max], len);
   }
 
  public:
@@ -296,8 +292,6 @@ class Cgmres : public Model {
   double* dUdt;
 
   double* x_dxh;
-  double* xtau;
-  double* ltau;
   double* ptau;
 
   double* F_dxh_h;
