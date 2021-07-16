@@ -21,11 +21,6 @@ class Cgmres : public Model {
     F_dxh_h = new double[dim_u * dv];
     b_vec = new double[dim_u * dv];
 
-    v_mat = new double[(dim_u * dv) * (k_max + 1)];
-    h_mat = new double[(k_max + 1) * (k_max + 1)];
-    rho_e_vec = new double[k_max + 1];
-    g_vec = new double[(g_vec_len) * (k_max)];
-
     U_buf = new double[dim_u * dv];
   }
 
@@ -41,11 +36,6 @@ class Cgmres : public Model {
     delete[] F_dxh_h;
     delete[] b_vec;
 
-    delete[] v_mat;
-    delete[] h_mat;
-    delete[] rho_e_vec;
-    delete[] g_vec;
-
     delete[] U_buf;
   }
 
@@ -54,40 +44,37 @@ class Cgmres : public Model {
   }
 
   void set_ptau(const double* ptau_buf) {
-    int16_t len;
-
     // ptau = [ p(t), p(t + dtau), ..., p(t + dv * dtau) ]
-    len = dim_p * (dv + 1);
-    mov(ptau, ptau_buf, len);
+    mov(ptau, ptau_buf, dim_p * (dv + 1));
   }
 
   void set_ptau_repeat(const double* p_buf) {
-    int16_t idx;
+    uint16_t idx;
 
     // ptau = [ p(t), p(t), ..., p(t) ]
-    for (int16_t i = 0; i < dv + 1; i++) {
+    for (uint16_t i = 0; i < dv + 1; i++) {
       idx = dim_p * i;
       mov(&ptau[idx], p_buf, dim_p);
     }
   }
 
   void init_u0(const double* u0) {
-    int16_t idx;
+    uint16_t idx;
 
     // U(i) = u0
-    for (int16_t i = 0; i < dv; i++) {
+    for (uint16_t i = 0; i < dv; i++) {
       idx = dim_u * i;
       mov(&U[idx], u0, dim_u);
     }
   }
 
-  void init_u0_newton(double* u0, const double* x0, const double* p0, const int16_t n_loop) {
+  void init_u0_newton(double* u0, const double* x0, const double* p0, const uint16_t n_loop) {
     double lmd0[dim_x], vec[dim_u], mat[dim_u * dim_u];
 
     Model::dPhidx(lmd0, x0, p0);
 
     // u0 = u0 - dHduu \ dHdu
-    for (int16_t i = 0; i < n_loop; i++) {
+    for (uint16_t i = 0; i < n_loop; i++) {
       Model::dHdu(vec, x0, u0, p0, lmd0);
       Model::ddHduu(mat, x0, u0, p0, lmd0);
       linsolve(vec, mat, dim_u);
@@ -99,13 +86,10 @@ class Cgmres : public Model {
   }
 
   void control(double* u, const double* x) {
-    int16_t len;
-
     // x + dxdt * h
-    len = dim_x;
     Model::dxdt(x_dxh, x, &U[0], &ptau[0]);
-    mul(x_dxh, x_dxh, h, len);
-    add(x_dxh, x_dxh, x, len);
+    mul(x_dxh, x_dxh, h, dim_x);
+    add(x_dxh, x_dxh, x, dim_x);
 
     // F(U, x + dxdt * h, t + h)
     F_func(F_dxh_h, U, x_dxh, t + h);
@@ -114,16 +98,14 @@ class Cgmres : public Model {
     F_func(b_vec, U, x, t);
 
     // (F(U, x, t) * (1 - zeta * h) - F(U, x + dxdt * h, t + h)) / h
-    len = dim_u * dv;
     mul(b_vec, b_vec, (1 - zeta * h), len);
     sub(b_vec, b_vec, F_dxh_h, len);
     div(b_vec, b_vec, h, len);
 
     // GMRES
-    gmres();
+    gmres(dUdt, b_vec, len, k_max, tol);
 
     // U = U + dUdt * dt
-    len = dim_u * dv;
     mul(U_buf, dUdt, dt, len);
     add(U, U, U_buf, len);
 
@@ -136,7 +118,7 @@ class Cgmres : public Model {
 
  private:
   void F_func(double* ret, const double* U, const double* x, const double t) {
-    int16_t i, idx_x, idx_u, idx_p;
+    uint16_t idx_x, idx_u, idx_p;
     double dtau;
 
 #ifdef DEBUG_MODE
@@ -153,7 +135,7 @@ class Cgmres : public Model {
     // x(0) = x
     // x(i + 1) = x(i) + dxdt(x(i), u(i), p(i)) * dtau
     mov(&xtau[0], x, dim_x);
-    for (i = 0; i < dv; i++) {
+    for (uint16_t i = 0; i < dv; i++) {
       idx_x = dim_x * i;
       idx_u = dim_u * i;
       idx_p = dim_p * i;
@@ -166,7 +148,7 @@ class Cgmres : public Model {
     // lmd(N) = dPhidx(x(N), p(N))
     // lmd(i) = lmd(i + 1) + dHdx(x(i), u(i), p(i), lmd(i + 1)) * dtau
     Model::dPhidx(&ltau[dim_x * dv], &xtau[dim_x * dv], &ptau[dim_p * dv]);
-    for (i = dv - 1; i >= 0; i--) {
+    for (int16_t i = dv - 1; i >= 0; i--) {
       idx_x = dim_x * i;
       idx_u = dim_u * i;
       idx_p = dim_p * i;
@@ -176,7 +158,7 @@ class Cgmres : public Model {
     }
 
     // F(i) = dHdU(x(i), u(i), lmd(i + 1))
-    for (i = 0; i < dv; i++) {
+    for (uint16_t i = 0; i < dv; i++) {
       idx_x = dim_x * i;
       idx_u = dim_u * i;
       idx_p = dim_p * i;
@@ -184,7 +166,7 @@ class Cgmres : public Model {
     }
   }
 
-  void Ax_func(double* Ax, const double* dUdt, const int16_t len) {
+  void Ax_func(double* Ax, const double* dUdt) {
     // F(U + dUdt * h, x + dxdt * h, t + h)
     mul(U_buf, dUdt, h, len);
     add(U_buf, U_buf, U, len);
@@ -195,13 +177,17 @@ class Cgmres : public Model {
     div(Ax, Ax, h, len);
   }
 
-  void gmres() {
-    int16_t len, i, j, k, idx_v1, idx_v2, idx_h, idx_g;
+  void gmres(double* dUdt, double* b_vec, const uint16_t len, const uint16_t k_max, const double tol) {
+    uint16_t k, idx_v1, idx_v2, idx_h, idx_g;
+    double v_mat[(len) * (k_max + 1)];
+    double h_mat[(k_max + 1) * (k_max + 1)];
+    double rho_e_vec[k_max + 1];
+    double g_vec[(g_vec_len) * (k_max)];
     double buf;
+    double U_buf[len];
 
     // Ax = (F(U + dUdt * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
-    len = dim_u * dv;
-    Ax_func(&v_mat[0], dUdt, len);
+    Ax_func(&v_mat[0], dUdt);
 
     // r0 = b - Ax
     sub(&v_mat[0], b_vec, &v_mat[0], len);
@@ -210,7 +196,6 @@ class Cgmres : public Model {
     rho_e_vec[0] = norm(&v_mat[0], len);
 
     if (rho_e_vec[0] < tol) {
-      k = 0;
       return;
     }
 
@@ -219,11 +204,11 @@ class Cgmres : public Model {
 
     for (k = 0; k < k_max; k++) {
       // v(k + 1) = (F(U + v(k) * h, x + dxdt * h, t + h) - F(U, x + dxdt * h, t + h)) / h
-      Ax_func(&v_mat[len * (k + 1)], &v_mat[len * k], len);
+      Ax_func(&v_mat[len * (k + 1)], &v_mat[len * k]);
 
       idx_v1 = len * (k + 1);
       // Modified Gram-Schmidt
-      for (i = 0; i < k + 1; i++) {
+      for (uint16_t i = 0; i < k + 1; i++) {
         idx_v2 = len * i;
         idx_h = (k_max + 1) * k + i;
         h_mat[idx_h] = dot(&v_mat[idx_v2], &v_mat[idx_v1], len);
@@ -242,7 +227,7 @@ class Cgmres : public Model {
       }
 
       // Transformation h_mat to upper triangular matrix by Householder transformation
-      for (i = 0; i < k; i++) {
+      for (uint16_t i = 0; i < k; i++) {
         idx_h = (k_max + 1) * k + i;
         idx_g = g_vec_len * i;
         buf = (g_vec[idx_g + 0] * h_mat[idx_h + 0] + g_vec[idx_g + 1] * h_mat[idx_h + 1]) * g_vec[idx_g + 2];
@@ -271,8 +256,8 @@ class Cgmres : public Model {
 
     // Solve h_mat * y = rho_e_vec
     // h_mat is upper triangle matrix
-    for (i = k - 1; i >= 0; i--) {
-      for (j = k - 1; j > i; j--) {
+    for (int16_t i = k - 1; i >= 0; i--) {
+      for (int16_t j = k - 1; j > i; j--) {
         idx_h = (k_max + 1) * j + i;
         rho_e_vec[i] -= h_mat[idx_h] * rho_e_vec[j];
       }
@@ -281,9 +266,8 @@ class Cgmres : public Model {
     }
 
     // dUdt = dUdt + v_mat * y
-    len = dim_u * dv;
-    mul(U_buf, v_mat, rho_e_vec, len, k);
-    add(dUdt, dUdt, U_buf, len);
+    mul(&v_mat[len * k_max], v_mat, rho_e_vec, len, k);
+    add(dUdt, dUdt, &v_mat[len * k_max], len);
   }
 
  public:
@@ -303,6 +287,7 @@ class Cgmres : public Model {
 
  private:
   // Constants
+  static constexpr uint16_t len = dim_u * dv;
   static constexpr uint16_t g_vec_len = 3;
 
   // Variables
@@ -317,11 +302,6 @@ class Cgmres : public Model {
 
   double* F_dxh_h;
   double* b_vec;
-
-  double* v_mat;
-  double* h_mat;
-  double* rho_e_vec;
-  double* g_vec;
 
   double* U_buf;
 
