@@ -290,6 +290,7 @@ class Cgmres : public Model {
     add(dUdt, dUdt, U_buf, len);
   }
 
+ public:
   // Parameters
   static constexpr uint16_t dim_x = Model::dim_x;
   static constexpr uint16_t dim_u = Model::dim_u;
