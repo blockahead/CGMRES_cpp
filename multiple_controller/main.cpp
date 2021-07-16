@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include <cgmres.hpp>
 #include <iostream>
-#include <matrix.hpp>
 
+#include "cgmres.hpp"
+#include "matrix.hpp"
 #include "model1.hpp"
 #include "model2.hpp"
 #include "simulator1.hpp"
@@ -95,10 +95,10 @@ int main(void) {
   controller1.init_u0_newton(u1, x1, pt1, 10);
   controller2.init_u0_newton(u2, x2, pt2, 10);
 
-  fp_x1 = fopen("x1.txt", "w");
-  fp_u1 = fopen("u1.txt", "w");
-  fp_x2 = fopen("x2.txt", "w");
-  fp_u2 = fopen("u2.txt", "w");
+  fp_x1 = fopen("multiple_contoller_x1.txt", "w");
+  fp_u1 = fopen("multiple_contoller_u1.txt", "w");
+  fp_x2 = fopen("multiple_contoller_x2.txt", "w");
+  fp_u2 = fopen("multiple_contoller_u2.txt", "w");
 
   if (NULL != fp_x1 && NULL != fp_u1 && NULL != fp_x2 && NULL != fp_u2) {
     for (int i = 0; i <= (int)(Simulator1::t_end / Simulator1::dt); i++) {

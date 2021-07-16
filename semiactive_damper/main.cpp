@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include <cgmres.hpp>
 #include <iostream>
-#include <matrix.hpp>
 
+#include "cgmres.hpp"
+#include "matrix.hpp"
 #include "model.hpp"
 #include "simulator.hpp"
 
@@ -46,8 +46,8 @@ int main(void) {
   controller.init_u0(u);
   controller.init_u0_newton(u, x, pt, 10);
 
-  fp_x = fopen("x.txt", "w");
-  fp_u = fopen("u.txt", "w");
+  fp_x = fopen("semiactive_damper_x.txt", "w");
+  fp_u = fopen("semiactive_damper_u.txt", "w");
 
   if (NULL != fp_x && NULL != fp_u) {
     for (int i = 0; i <= (int)(Simulator::t_end / Simulator::dt); i++) {
