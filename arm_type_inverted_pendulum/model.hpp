@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 class Model {
- protected:
+ public:
   // Number of state
   static constexpr uint16_t dim_x = 4;
   // Number of control input
